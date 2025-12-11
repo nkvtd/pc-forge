@@ -1,0 +1,40 @@
+{
+  "scripts": {
+    "dev": "vike dev",
+    "build": "vike build",
+    "preview": "vike build && vike preview",
+    "lint": "biome lint --write .",
+    "format": "biome format --write .",
+    "drizzle:generate": "drizzle-kit generate",
+    "drizzle:migrate": "drizzle-kit migrate",
+    "drizzle:studio": "drizzle-kit studio",
+    "prod": "vike build && node ./dist/server/index.mjs"
+  },
+  "dependencies": {
+    "vike": "^0.4.247",
+    "@auth/core": "^0.41.1",
+    "@universal-middleware/core": "^0.4.13",
+    "drizzle-kit": "^0.31.8",
+    "drizzle-orm": "^0.45.0",
+    "dotenv": "^17.2.3",
+    "better-sqlite3": "^12.5.0",
+    "@photonjs/hono": "^0.1.10",
+    "hono": "^4.10.7",
+    "vike-photon": "^0.1.22",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "vike-react": "^0.6.13",
+    "telefunc": "^0.2.17"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vite": "^7.2.7",
+    "@biomejs/biome": "2.3.8",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^20.19.25",
+    "@vitejs/plugin-react": "^5.1.2",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3"
+  },
+  "type": "module"
+}
