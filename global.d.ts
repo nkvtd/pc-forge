@@ -1,10 +1,10 @@
 import { Session } from "@auth/core/types";
-import type { dbSqlite } from "./database/drizzle/db";
+import type { db } from "./database/drizzle/db";
 
 declare module "telefunc" {
   namespace Telefunc {
     interface Context {
-      db: ReturnType<typeof dbSqlite>;
+      db: ReturnType<typeof db>;
     }
   }
 }
@@ -12,7 +12,7 @@ declare module "telefunc" {
 declare global {
   namespace Vike {
     interface PageContextServer {
-      db: ReturnType<typeof dbSqlite>;
+      db: ReturnType<typeof db>;
     }
   }
 }
