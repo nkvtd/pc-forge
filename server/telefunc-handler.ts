@@ -1,4 +1,4 @@
-import type { dbSqlite } from "../database/drizzle/db";
+import type { Database } from "../database/drizzle/db";
 import { enhance, type UniversalHandler } from "@universal-middleware/core";
 import { telefunc } from "telefunc";
 
@@ -9,7 +9,7 @@ export const telefuncHandler: UniversalHandler = enhance(
       method: request.method,
       body: await request.text(),
       context: {
-        ...(context as { db: ReturnType<typeof dbSqlite> }),
+        ...(context as { db: Database }),
         ...runtime,
       },
     });
@@ -22,7 +22,7 @@ export const telefuncHandler: UniversalHandler = enhance(
     });
   },
   {
-    name: "my-app:telefunc-handler",
+    name: "pc-forge:telefunc-handler",
     path: `/_telefunc`,
     method: ["GET", "POST"],
     immutable: false,

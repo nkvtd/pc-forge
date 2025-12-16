@@ -2,31 +2,61 @@ import { Auth, type AuthConfig, createActionURL, setEnvDefaults } from "@auth/co
 import CredentialsProvider from "@auth/core/providers/credentials";
 import type { Session } from "@auth/core/types";
 import { enhance, type UniversalHandler, type UniversalMiddleware } from "@universal-middleware/core";
+import {eq} from "drizzle-orm";
+import { db } from "../database/drizzle/db";
+import { usersTable } from "../database/drizzle/schema";
+import bcrypt from "bcrypt";
+// import { users, accounts, sessions, verificationTokens } from "../database/drizzle/schema/auth";
 
 const authjsConfig = {
   basePath: "/api/auth",
   trustHost: true,
-  // TODO: Replace secret {@see https://authjs.dev/reference/core#secret}
-  secret: "MY_SECRET",
+  secret: process.env.AUTH_SECRET,
+  session: {
+    strategy: "jwt",
+  },
   providers: [
-    // TODO: Choose and implement providers
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        username: { label: "Username", type: "text", placeholder: "jsmith" },
+        username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      async authorize() {
-        // Add logic here to look up the user from the credentials supplied
-        const user = { id: "1", name: "J Smith", email: "jsmith@example.com" };
+      async authorize(credentials) {
+        const username = typeof credentials?.username === "string" ? credentials.username : null;
+        const password = typeof credentials?.password === "string" ? credentials.password : null;
 
-        // Any object returned will be saved in `user` property of the JWT
-        // If you return null then an error will be displayed advising the user to check their details.
-        // You can also Reject this callback with an Error thus the user will be sent to the error page with the error message as a query parameter
-        return user ?? null;
+        if(!username || !password) { return null; }
+
+        const user = await db.query.usersTable.findFirst({
+            where: eq(usersTable.username, username),
+        });
+
+        if(!user) { return null; }
+
+        const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+
+        if(!isPasswordValid) { return null; }
+
+        return {
+            id: String(user.id),
+            name: user.username,
+            email: user.email,
+        }
       },
     }),
   ],
+
+  callbacks: {
+      async jwt({ token, user }) {
+          if (user) token.sub = user.id;
+          return token;
+      },
+      async session({ session, token }) {
+          if (session.user && token.sub) session.user.id = token.sub;
+          return session;
+      },
+  },
 } satisfies Omit<AuthConfig, "raw">;
 
 /**
@@ -68,7 +98,7 @@ export const authjsSessionMiddleware: UniversalMiddleware = enhance(
     }
   },
   {
-    name: "my-app:authjs-middleware",
+    name: "pc-forge:authjs-middleware",
     immutable: false,
   },
 );
@@ -82,7 +112,7 @@ export const authjsHandler = enhance(
     return Auth(request, authjsConfig);
   },
   {
-    name: "my-app:authjs-handler",
+    name: "pc-forge:authjs-handler",
     path: "/api/auth/**",
     method: ["GET", "POST"],
     immutable: false,

@@ -11,30 +11,35 @@
     "prod": "vike build && node ./dist/server/index.mjs"
   },
   "dependencies": {
-    "vike": "^0.4.247",
     "@auth/core": "^0.41.1",
-    "@universal-middleware/core": "^0.4.13",
-    "drizzle-kit": "^0.31.8",
-    "drizzle-orm": "^0.45.0",
-    "dotenv": "^17.2.3",
-    "better-sqlite3": "^12.5.0",
+    "@auth/drizzle-adapter": "^1.11.1",
     "@photonjs/hono": "^0.1.10",
+    "@universal-middleware/core": "^0.4.13",
+    "bcrypt": "^6.0.0",
+    "better-sqlite3": "^12.5.0",
+    "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.45.1",
     "hono": "^4.10.7",
-    "vike-photon": "^0.1.22",
+    "pg": "^8.16.3",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
-    "vike-react": "^0.6.13",
-    "telefunc": "^0.2.17"
+    "telefunc": "^0.2.17",
+    "vike": "^0.4.247",
+    "vike-photon": "^0.1.22",
+    "vike-react": "^0.6.13"
   },
   "devDependencies": {
-    "typescript": "^5.9.3",
-    "vite": "^7.2.7",
     "@biomejs/biome": "2.3.8",
+    "@types/bcrypt": "^6.0.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20.19.25",
-    "@vitejs/plugin-react": "^5.1.2",
+    "@types/pg": "^8.16.0",
     "@types/react": "^19.2.7",
-    "@types/react-dom": "^19.2.3"
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.2",
+    "drizzle-kit": "^0.31.8",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.7"
   },
   "type": "module"
 }

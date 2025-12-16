@@ -1,26 +1,23 @@
-import { dbSqlite } from "../database/drizzle/db";
+import { db } from "../database/drizzle/db";
+import type { Database } from "../database/drizzle/db";
 import { enhance, type UniversalMiddleware } from "@universal-middleware/core";
 
 declare global {
   namespace Universal {
     interface Context {
-      db: ReturnType<typeof dbSqlite>;
+      db: Database;
     }
   }
 }
 
 // Add `db` to the Context
 export const dbMiddleware: UniversalMiddleware = enhance(
-  async (_request, context, _runtime) => {
-    const db = dbSqlite();
-
-    return {
-      ...context,
-      db: db,
-    };
-  },
+  async (_request, context) => ({
+    ...context,
+          db,
+  }),
   {
-    name: "my-app:db-middleware",
+    name: "pc-forge:db-middleware",
     immutable: false,
   },
 );
