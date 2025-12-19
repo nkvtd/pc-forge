@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { authjsHandler, authjsSessionMiddleware } from "./authjs-handler";
 import { dbMiddleware } from "./db-middleware";
-import { telefuncHandler } from "./telefunc-handler";
+import telefuncHandler from "./telefunc-handler";
 import { apply, serve } from "@photonjs/hono";
 import { Hono } from "hono";
 
