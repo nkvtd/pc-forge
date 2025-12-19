@@ -52,7 +52,7 @@ export const powerSupplyTable = pgTable("power_supply", {
     formFactor: text("form_factor").notNull(),
 });
 
-export const pcCaseTable = pgTable("pc_case", {
+export const pcCasesTable = pgTable("pc_case", {
     componentId: integer("component_id")
         .primaryKey()
         .references(() => componentsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
@@ -64,8 +64,9 @@ export const pcCaseTable = pgTable("pc_case", {
 export const caseStorageFormFactorsTable = pgTable("case_storage_form_factors", {
         caseId: integer("case_id")
             .notNull()
-            .references(() => pcCaseTable.componentId, {onDelete: "cascade", onUpdate: "cascade" }),
+            .references(() => pcCasesTable.componentId, {onDelete: "cascade", onUpdate: "cascade" }),
         formFactor: text("form_factor").notNull(),
+        num_slots: integer("num_slots").notNull(),
     },
     (t) => ({
         pk: primaryKey({ columns: [t.caseId, t.formFactor] }),
@@ -75,7 +76,7 @@ export const caseStorageFormFactorsTable = pgTable("case_storage_form_factors", 
 export const casePsFormFactorsTable = pgTable( "case_ps_form_factors", {
         caseId: integer("case_id")
             .notNull()
-            .references(() => pcCaseTable.componentId, { onDelete: "cascade", onUpdate: "cascade"}),
+            .references(() => pcCasesTable.componentId, { onDelete: "cascade", onUpdate: "cascade"}),
         formFactor: text("form_factor").notNull(),
     },
     (t) => ({
@@ -86,7 +87,7 @@ export const casePsFormFactorsTable = pgTable( "case_ps_form_factors", {
 export const caseMoboFormFactorsTable = pgTable("case_mobo_form_factors", {
         caseId: integer("case_id")
             .notNull()
-            .references(() => pcCaseTable.componentId, { onDelete: "cascade", onUpdate: "cascade"}),
+            .references(() => pcCasesTable.componentId, { onDelete: "cascade", onUpdate: "cascade"}),
         formFactor: text("form_factor").notNull(),
     },
     (t) => ({
@@ -94,7 +95,7 @@ export const caseMoboFormFactorsTable = pgTable("case_mobo_form_factors", {
     }),
 );
 
-export const coolerTable = pgTable("cooler", {
+export const coolersTable = pgTable("cooler", {
     componentId: integer("component_id")
         .primaryKey()
         .references(() => componentsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
@@ -107,7 +108,7 @@ export const coolerTable = pgTable("cooler", {
 export const coolerCPUSocketsTable = pgTable("cooler_cpu_sockets", {
         cooler_id: integer("cooler_id")
             .notNull()
-            .references(() => coolerTable.componentId, { onDelete: "cascade", onUpdate: "cascade" }),
+            .references(() => coolersTable.componentId, { onDelete: "cascade", onUpdate: "cascade" }),
         socket: text("socket").notNull(),
     },
     (t) => ({
@@ -115,7 +116,7 @@ export const coolerCPUSocketsTable = pgTable("cooler_cpu_sockets", {
     })
 );
 
-export const motherboardTable = pgTable("motherboard", {
+export const motherboardsTable = pgTable("motherboard", {
     componentId: integer("component_id")
         .primaryKey()
         .references(() => componentsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
@@ -138,7 +139,7 @@ export const storageTable = pgTable("storage", {
 });
 
 // Other Components
-export const memoryCardTable = pgTable("memory_card", {
+export const memoryCardsTable = pgTable("memory_card", {
     componentId: integer("component_id")
         .primaryKey()
         .references(() => componentsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
@@ -146,7 +147,7 @@ export const memoryCardTable = pgTable("memory_card", {
     interface: text("interface").notNull(),
 });
 
-export const opticalDriveTable = pgTable("optical_drive", {
+export const opticalDrivesTable = pgTable("optical_drive", {
     componentId: integer("component_id")
         .primaryKey()
         .references(() => componentsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
@@ -157,7 +158,7 @@ export const opticalDriveTable = pgTable("optical_drive", {
     readSpeed: numeric("read_speed").notNull(),
 });
 
-export const soundCardTable = pgTable("sound_card", {
+export const soundCardsTable = pgTable("sound_card", {
     componentId: integer("component_id")
         .primaryKey()
         .references(() => componentsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
@@ -165,19 +166,8 @@ export const soundCardTable = pgTable("sound_card", {
     bitDepth: numeric("bit_depth").notNull(),
     chipset: text("chipset").notNull(),
     interface: text("interface").notNull(),
+    channel: text("channel").notNull(),
 });
-
-// SoundCard multi-values
-export const soundCardChannelsTable = pgTable("sound_card_channels", {
-        soundCardId: integer("sound_card_id")
-            .notNull()
-            .references(() => soundCardTable.componentId, { onDelete: "cascade", onUpdate: "cascade" }),
-        channel: text("channel").notNull(),
-    },
-    (t) => ({
-        pk: primaryKey({ columns: [t.soundCardId, t.channel] }),
-    })
-);
 
 export const cablesTable = pgTable("cables", {
     componentId: integer("component_id")
@@ -187,7 +177,7 @@ export const cablesTable = pgTable("cables", {
     type: text("type").notNull(),
 });
 
-export const networkAdapterTable = pgTable("network_adapter", {
+export const networkAdaptersTable = pgTable("network_adapter", {
     componentId: integer("component_id")
         .primaryKey()
         .references(() => componentsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
@@ -196,7 +186,7 @@ export const networkAdapterTable = pgTable("network_adapter", {
     numAntennas: integer("num_antennas").notNull(),
 });
 
-export const networkCardTable = pgTable("network_card", {
+export const networkCardsTable = pgTable("network_card", {
     componentId: integer("component_id")
         .primaryKey()
         .references(() => componentsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
@@ -220,8 +210,8 @@ export type memoryInsert = typeof memoryTable.$inferInsert;
 export type powerSupplyItem = typeof powerSupplyTable.$inferSelect;
 export type powerSupplyInsert = typeof powerSupplyTable.$inferInsert;
 
-export type caseItem = typeof pcCaseTable.$inferSelect;
-export type caseInsert = typeof pcCaseTable.$inferInsert;
+export type caseItem = typeof pcCasesTable.$inferSelect;
+export type caseInsert = typeof pcCasesTable.$inferInsert;
 
 export type caseStorageFormFactorsItem = typeof caseStorageFormFactorsTable.$inferSelect;
 export type caseStorageFormFactorsInsert = typeof caseStorageFormFactorsTable.$inferInsert;
@@ -232,36 +222,33 @@ export type casePsFormFactorsInsert = typeof casePsFormFactorsTable.$inferInsert
 export type caseMoboFormFactorsItem = typeof caseMoboFormFactorsTable.$inferSelect;
 export type caseMoboFormFactorsInsert = typeof caseMoboFormFactorsTable.$inferInsert;
 
-export type coolerItem = typeof coolerTable.$inferSelect;
-export type coolerInsert = typeof coolerTable.$inferInsert;
+export type coolerItem = typeof coolersTable.$inferSelect;
+export type coolerInsert = typeof coolersTable.$inferInsert;
 
 export type coolerCPUSocketsItem = typeof coolerCPUSocketsTable.$inferSelect;
 export type coolerCPUSocketsInsert = typeof coolerCPUSocketsTable.$inferInsert;
 
-export type motherboardItem = typeof motherboardTable.$inferSelect;
-export type motherboardInsert = typeof motherboardTable.$inferInsert;
+export type motherboardItem = typeof motherboardsTable.$inferSelect;
+export type motherboardInsert = typeof motherboardsTable.$inferInsert;
 
 export type storageItem = typeof storageTable.$inferSelect;
 export type storageInsert = typeof storageTable.$inferInsert
 
-export type memoryCardItem = typeof memoryCardTable.$inferSelect;
-export type memoryCardInsert = typeof memoryCardTable.$inferInsert;
+export type memoryCardItem = typeof memoryCardsTable.$inferSelect;
+export type memoryCardInsert = typeof memoryCardsTable.$inferInsert;
 
-export type opticalDriveItem = typeof opticalDriveTable.$inferSelect;
-export type opticalDriveInsert = typeof opticalDriveTable.$inferInsert;
+export type opticalDriveItem = typeof opticalDrivesTable.$inferSelect;
+export type opticalDriveInsert = typeof opticalDrivesTable.$inferInsert;
 
-export type soundCardItem = typeof soundCardTable.$inferSelect;
-export type soundCardInsert = typeof soundCardTable.$inferInsert;
-
-export type soundCardChannelsItem = typeof soundCardChannelsTable.$inferSelect;
-export type soundCardChannelsInsert = typeof soundCardChannelsTable.$inferInsert;
+export type soundCardItem = typeof soundCardsTable.$inferSelect;
+export type soundCardInsert = typeof soundCardsTable.$inferInsert;
 
 export type cablesItem = typeof cablesTable.$inferSelect;
 export type cablesInsert = typeof cablesTable.$inferInsert;
 
-export type networkAdapterItem = typeof networkAdapterTable.$inferSelect;
-export type networkAdapterInsert = typeof networkAdapterTable.$inferInsert;
+export type networkAdapterItem = typeof networkAdaptersTable.$inferSelect;
+export type networkAdapterInsert = typeof networkAdaptersTable.$inferInsert;
 
-export type networkCardItem = typeof networkCardTable.$inferSelect;
-export type networkCardInsert = typeof networkCardTable.$inferInsert;
+export type networkCardItem = typeof networkCardsTable.$inferSelect;
+export type networkCardInsert = typeof networkCardsTable.$inferInsert;
 

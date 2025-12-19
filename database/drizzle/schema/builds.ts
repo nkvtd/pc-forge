@@ -2,7 +2,7 @@ import { pgTable, serial, integer, text, numeric, boolean, date, primaryKey } fr
 import { usersTable } from "./users";
 import { componentsTable } from "./components";
 
-export const buildTable = pgTable("build", {
+export const buildsTable = pgTable("build", {
     id: serial("id").primaryKey(),
     userId: integer("user_id")
         .notNull()
@@ -14,10 +14,10 @@ export const buildTable = pgTable("build", {
     isApproved: boolean("is_approved").notNull(),
 });
 
-export const buildComponentTable = pgTable("build_component", {
+export const buildComponentsTable = pgTable("build_component", {
         buildId: integer("build_id")
             .notNull()
-            .references(() => buildTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
+            .references(() => buildsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
         componentId: integer("component_id")
             .notNull()
             .references(() => componentsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
@@ -27,10 +27,10 @@ export const buildComponentTable = pgTable("build_component", {
     }),
 );
 
-export const favoriteBuildTable = pgTable("favorite_build", {
+export const favoriteBuildsTable = pgTable("favorite_build", {
         buildId: integer("build_id")
             .notNull()
-            .references(() => buildTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
+            .references(() => buildsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
         userId: integer("user_id")
             .notNull()
             .references(() => usersTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
@@ -40,10 +40,10 @@ export const favoriteBuildTable = pgTable("favorite_build", {
     }),
 );
 
-export const ratingBuildTable = pgTable("rating_build", {
+export const ratingBuildsTable = pgTable("rating_build", {
         buildId: integer("build_id")
             .notNull()
-            .references(() => buildTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
+            .references(() => buildsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
         userId: integer("user_id")
             .notNull()
             .references(() => usersTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
@@ -54,12 +54,12 @@ export const ratingBuildTable = pgTable("rating_build", {
     }),
 );
 
-export const reviewTable = pgTable("review", {
+export const reviewsTable = pgTable("review", {
     id: serial("id").primaryKey(),
 
     buildId: integer("build_id")
         .notNull()
-        .references(() => buildTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
+        .references(() => buildsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
     userId: integer("user_id")
         .notNull()
         .references(() => usersTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
@@ -67,17 +67,17 @@ export const reviewTable = pgTable("review", {
     createdAt: date("created_at").notNull(),
 });
 
-export type buildItem = typeof buildTable.$inferSelect;
-export type buildInsert = typeof buildTable.$inferInsert;
+export type buildItem = typeof buildsTable.$inferSelect;
+export type buildInsert = typeof buildsTable.$inferInsert;
 
-export type buildComponentItem = typeof buildComponentTable.$inferSelect;
-export type buildComponentInsert = typeof buildComponentTable.$inferInsert;
+export type buildComponentItem = typeof buildComponentsTable.$inferSelect;
+export type buildComponentInsert = typeof buildComponentsTable.$inferInsert;
 
-export type favoriteBuildItem = typeof favoriteBuildTable.$inferSelect;
-export type favoriteBuildInsert = typeof favoriteBuildTable.$inferInsert;
+export type favoriteBuildItem = typeof favoriteBuildsTable.$inferSelect;
+export type favoriteBuildInsert = typeof favoriteBuildsTable.$inferInsert;
 
-export type ratingBuildItem = typeof ratingBuildTable.$inferSelect;
-export type ratingBuildInsert = typeof ratingBuildTable.$inferInsert;
+export type ratingBuildItem = typeof ratingBuildsTable.$inferSelect;
+export type ratingBuildInsert = typeof ratingBuildsTable.$inferInsert;
 
-export type reviewItem = typeof reviewTable.$inferSelect;
-export type reviewInsert = typeof reviewTable.$inferInsert;
+export type reviewItem = typeof reviewsTable.$inferSelect;
+export type reviewInsert = typeof reviewsTable.$inferInsert;

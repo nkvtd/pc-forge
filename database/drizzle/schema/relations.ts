@@ -6,30 +6,29 @@ import {
     GPUTable,
     memoryTable,
     powerSupplyTable,
-    pcCaseTable,
+    pcCasesTable,
     caseStorageFormFactorsTable,
     casePsFormFactorsTable,
     caseMoboFormFactorsTable,
-    coolerTable,
+    coolersTable,
     coolerCPUSocketsTable,
-    motherboardTable,
+    motherboardsTable,
     storageTable,
-    memoryCardTable,
-    opticalDriveTable,
-    soundCardTable,
-    soundCardChannelsTable,
+    memoryCardsTable,
+    opticalDrivesTable,
+    soundCardsTable,
     cablesTable,
-    networkAdapterTable,
-    networkCardTable,
+    networkAdaptersTable,
+    networkCardsTable,
 
 } from "./components";
 
 import {
-    buildTable,
-    buildComponentTable,
-    favoriteBuildTable,
-    ratingBuildTable,
-    reviewTable
+    buildsTable,
+    buildComponentsTable,
+    favoriteBuildsTable,
+    ratingBuildsTable,
+    reviewsTable
 } from "./builds"
 
 import {
@@ -39,10 +38,10 @@ import {
 } from "./users";
 
 export const usersRelations = relations(usersTable, ({ many, one }) => ({
-    builds: many(buildTable),
-    reviews: many(reviewTable),
-    favorites: many(favoriteBuildTable),
-    ratings: many(ratingBuildTable),
+    builds: many(buildsTable),
+    reviews: many(reviewsTable),
+    favorites: many(favoriteBuildsTable),
+    ratings: many(ratingBuildsTable),
     suggestions: many(suggestionsTable),
     adminProfile: one(adminsTable, {
         fields: [usersTable.id],
@@ -69,63 +68,63 @@ export const suggestionsRelations = relations(suggestionsTable, ({ one }) => ({
     }),
 }));
 
-export const buildRelations = relations(buildTable, ({ one, many }) => ({
+export const buildRelations = relations(buildsTable, ({ one, many }) => ({
     owner: one(usersTable, {
-        fields: [buildTable.userId],
+        fields: [buildsTable.userId],
         references: [usersTable.id],
     }),
-    buildComponents: many(buildComponentTable),
-    favorites: many(favoriteBuildTable),
-    ratings: many(ratingBuildTable),
-    reviews: many(reviewTable),
+    buildComponents: many(buildComponentsTable),
+    favorites: many(favoriteBuildsTable),
+    ratings: many(ratingBuildsTable),
+    reviews: many(reviewsTable),
 }));
 
-export const buildComponentRelations = relations(buildComponentTable, ({ one }) => ({
-    build: one(buildTable, {
-        fields: [buildComponentTable.buildId],
-        references: [buildTable.id],
+export const buildComponentRelations = relations(buildComponentsTable, ({ one }) => ({
+    build: one(buildsTable, {
+        fields: [buildComponentsTable.buildId],
+        references: [buildsTable.id],
     }),
     component: one(componentsTable, {
-        fields: [buildComponentTable.componentId],
+        fields: [buildComponentsTable.componentId],
         references: [componentsTable.id],
     }),
 }));
 
-export const favoriteBuildRelations = relations(favoriteBuildTable, ({ one }) => ({
+export const favoriteBuildRelations = relations(favoriteBuildsTable, ({ one }) => ({
     user: one(usersTable, {
-        fields: [favoriteBuildTable.userId],
+        fields: [favoriteBuildsTable.userId],
         references: [usersTable.id],
     }),
-    build: one(buildTable, {
-        fields: [favoriteBuildTable.buildId],
-        references: [buildTable.id],
+    build: one(buildsTable, {
+        fields: [favoriteBuildsTable.buildId],
+        references: [buildsTable.id],
     }),
 }));
 
-export const ratingBuildRelations = relations(ratingBuildTable, ({ one }) => ({
+export const ratingBuildRelations = relations(ratingBuildsTable, ({ one }) => ({
     user: one(usersTable, {
-        fields: [ratingBuildTable.userId],
+        fields: [ratingBuildsTable.userId],
         references: [usersTable.id],
     }),
-    build: one(buildTable, {
-        fields: [ratingBuildTable.buildId],
-        references: [buildTable.id],
+    build: one(buildsTable, {
+        fields: [ratingBuildsTable.buildId],
+        references: [buildsTable.id],
     }),
 }));
 
-export const reviewRelations = relations(reviewTable, ({ one }) => ({
+export const reviewRelations = relations(reviewsTable, ({ one }) => ({
     author: one(usersTable, {
-        fields: [reviewTable.userId],
+        fields: [reviewsTable.userId],
         references: [usersTable.id],
     }),
-    build: one(buildTable, {
-        fields: [reviewTable.buildId],
-        references: [buildTable.id],
+    build: one(buildsTable, {
+        fields: [reviewsTable.buildId],
+        references: [buildsTable.id],
     }),
 }));
 
 export const componentsRelations = relations(componentsTable, ({ many, one }) => ({
-    buildComponents: many(buildComponentTable),
+    buildComponents: many(buildComponentsTable),
 
     cpu: one(CPUTable, {
         fields: [componentsTable.id],
@@ -143,45 +142,45 @@ export const componentsRelations = relations(componentsTable, ({ many, one }) =>
         fields: [componentsTable.id],
         references: [powerSupplyTable.componentId]
     }),
-    pcCase: one(pcCaseTable, {
+    pcCase: one(pcCasesTable, {
         fields: [componentsTable.id],
-        references: [pcCaseTable.componentId]
+        references: [pcCasesTable.componentId]
     }),
-    cooler: one(coolerTable, {
+    cooler: one(coolersTable, {
         fields: [componentsTable.id],
-        references: [coolerTable.componentId]
+        references: [coolersTable.componentId]
     }),
-    motherboard: one(motherboardTable, {
+    motherboard: one(motherboardsTable, {
         fields: [componentsTable.id],
-        references: [motherboardTable.componentId]
+        references: [motherboardsTable.componentId]
     }),
     storage: one(storageTable, {
         fields: [componentsTable.id],
         references: [storageTable.componentId]
     }),
-    memoryCard: one(memoryCardTable, {
+    memoryCard: one(memoryCardsTable, {
         fields: [componentsTable.id],
-        references: [memoryCardTable.componentId]
+        references: [memoryCardsTable.componentId]
     }),
-    opticalDrive: one(opticalDriveTable, {
+    opticalDrive: one(opticalDrivesTable, {
         fields: [componentsTable.id],
-        references: [opticalDriveTable.componentId]
+        references: [opticalDrivesTable.componentId]
     }),
-    soundCard: one(soundCardTable, {
+    soundCard: one(soundCardsTable, {
         fields: [componentsTable.id],
-        references: [soundCardTable.componentId]
+        references: [soundCardsTable.componentId]
     }),
     cables: one(cablesTable, {
         fields: [componentsTable.id],
         references: [cablesTable.componentId]
     }),
-    networkAdapter: one(networkAdapterTable, {
+    networkAdapter: one(networkAdaptersTable, {
         fields: [componentsTable.id],
-        references: [networkAdapterTable.componentId]
+        references: [networkAdaptersTable.componentId]
     }),
-    networkCard: one(networkCardTable, {
+    networkCard: one(networkCardsTable, {
         fields: [componentsTable.id],
-        references: [networkCardTable.componentId]
+        references: [networkCardsTable.componentId]
     }),
 }));
 
@@ -213,9 +212,9 @@ export const powerSupplyRelations = relations(powerSupplyTable, ({ one }) => ({
     }),
 }));
 
-export const motherboardRelations = relations(motherboardTable, ({ one }) => ({
+export const motherboardRelations = relations(motherboardsTable, ({ one }) => ({
     component: one(componentsTable, {
-        fields: [motherboardTable.componentId],
+        fields: [motherboardsTable.componentId],
         references: [componentsTable.id],
     }),
 }));
@@ -227,16 +226,16 @@ export const storageRelations = relations(storageTable, ({ one }) => ({
     }),
 }));
 
-export const memoryCardRelations = relations(memoryCardTable, ({ one }) => ({
+export const memoryCardRelations = relations(memoryCardsTable, ({ one }) => ({
     component: one(componentsTable, {
-        fields: [memoryCardTable.componentId],
+        fields: [memoryCardsTable.componentId],
         references: [componentsTable.id],
     }),
 }));
 
-export const opticalDriveRelations = relations(opticalDriveTable, ({ one }) => ({
+export const opticalDriveRelations = relations(opticalDrivesTable, ({ one }) => ({
     component: one(componentsTable, {
-        fields: [opticalDriveTable.componentId],
+        fields: [opticalDrivesTable.componentId],
         references: [componentsTable.id],
     }),
 }));
@@ -248,23 +247,23 @@ export const cablesRelations = relations(cablesTable, ({ one }) => ({
     }),
 }));
 
-export const networkAdapterRelations = relations(networkAdapterTable, ({ one }) => ({
+export const networkAdapterRelations = relations(networkAdaptersTable, ({ one }) => ({
     component: one(componentsTable, {
-        fields: [networkAdapterTable.componentId],
+        fields: [networkAdaptersTable.componentId],
         references: [componentsTable.id],
     }),
 }));
 
-export const networkCardRelations = relations(networkCardTable, ({ one }) => ({
+export const networkCardRelations = relations(networkCardsTable, ({ one }) => ({
     component: one(componentsTable, {
-        fields: [networkCardTable.componentId],
+        fields: [networkCardsTable.componentId],
         references: [componentsTable.id],
     }),
 }));
 
-export const pcCaseRelations = relations(pcCaseTable, ({ one, many }) => ({
+export const pcCaseRelations = relations(pcCasesTable, ({ one, many }) => ({
     component: one(componentsTable, {
-        fields: [pcCaseTable.componentId],
+        fields: [pcCasesTable.componentId],
         references: [componentsTable.id],
     }),
     storageFormFactors: many(caseStorageFormFactorsTable),
@@ -273,52 +272,44 @@ export const pcCaseRelations = relations(pcCaseTable, ({ one, many }) => ({
 }));
 
 export const caseStorageFormFactorsRelations = relations(caseStorageFormFactorsTable, ({ one }) => ({
-    pcCase: one(pcCaseTable, {
+    pcCase: one(pcCasesTable, {
         fields: [caseStorageFormFactorsTable.caseId],
-        references: [pcCaseTable.componentId],
+        references: [pcCasesTable.componentId],
     }),
 }));
 
 export const casePsFormFactorsRelations = relations(casePsFormFactorsTable, ({ one }) => ({
-    pcCase: one(pcCaseTable, {
+    pcCase: one(pcCasesTable, {
         fields: [casePsFormFactorsTable.caseId],
-        references: [pcCaseTable.componentId],
+        references: [pcCasesTable.componentId],
     }),
 }));
 
 export const caseMoboFormFactorsRelations = relations(caseMoboFormFactorsTable, ({ one }) => ({
-    pcCase: one(pcCaseTable, {
+    pcCase: one(pcCasesTable, {
         fields: [caseMoboFormFactorsTable.caseId],
-        references: [pcCaseTable.componentId],
+        references: [pcCasesTable.componentId],
     }),
 }));
 
-export const coolerRelations = relations(coolerTable, ({ one, many }) => ({
+export const coolerRelations = relations(coolersTable, ({ one, many }) => ({
     component: one(componentsTable, {
-        fields: [coolerTable.componentId],
+        fields: [coolersTable.componentId],
         references: [componentsTable.id],
     }),
     cpuSockets: many(coolerCPUSocketsTable),
 }));
 
 export const coolerCpuSocketsRelations = relations(coolerCPUSocketsTable, ({ one }) => ({
-    cooler: one(coolerTable, {
+    cooler: one(coolersTable, {
         fields: [coolerCPUSocketsTable.cooler_id],
-        references: [coolerTable.componentId],
+        references: [coolersTable.componentId],
     }),
 }));
 
-export const soundCardRelations = relations(soundCardTable, ({ one, many }) => ({
+export const soundCardRelations = relations(soundCardsTable, ({ one, many }) => ({
     component: one(componentsTable, {
-        fields: [soundCardTable.componentId],
+        fields: [soundCardsTable.componentId],
         references: [componentsTable.id],
-    }),
-    channels: many(soundCardChannelsTable),
-}));
-
-export const soundCardChannelsRelations = relations(soundCardChannelsTable, ({ one }) => ({
-    soundCard: one(soundCardTable, {
-        fields: [soundCardChannelsTable.soundCardId],
-        references: [soundCardTable.componentId],
     }),
 }));
