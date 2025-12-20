@@ -66,7 +66,7 @@ export const caseStorageFormFactorsTable = pgTable("case_storage_form_factors", 
             .notNull()
             .references(() => pcCasesTable.componentId, {onDelete: "cascade", onUpdate: "cascade" }),
         formFactor: text("form_factor").notNull(),
-        num_slots: integer("num_slots").notNull(),
+        numSlots: integer("num_slots").notNull(),
     },
     (t) => ({
         pk: primaryKey({ columns: [t.caseId, t.formFactor] }),
@@ -106,13 +106,13 @@ export const coolersTable = pgTable("cooler", {
 
 // Cooler multi-values
 export const coolerCPUSocketsTable = pgTable("cooler_cpu_sockets", {
-        cooler_id: integer("cooler_id")
+        coolerId: integer("cooler_id")
             .notNull()
             .references(() => coolersTable.componentId, { onDelete: "cascade", onUpdate: "cascade" }),
         socket: text("socket").notNull(),
     },
     (t) => ({
-        pk: primaryKey({ columns: [t.cooler_id, t.socket] }),
+        pk: primaryKey({ columns: [t.coolerId, t.socket] }),
     })
 );
 

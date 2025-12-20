@@ -1,6 +1,7 @@
-import { pgTable, serial, integer, text, numeric, boolean, date, primaryKey } from "drizzle-orm/pg-core";
+import {pgTable, serial, integer, text, numeric, boolean, date, primaryKey, check} from "drizzle-orm/pg-core";
 import { usersTable } from "./users";
 import { componentsTable } from "./components";
+import {sql} from "drizzle-orm";
 
 export const buildsTable = pgTable("build", {
     id: serial("id").primaryKey(),
@@ -51,6 +52,7 @@ export const ratingBuildsTable = pgTable("rating_build", {
     },
     (t) => ({
         pk: primaryKey({ columns: [t.buildId, t.userId] }),
+        checkValue: check("check_value", sql`${t.value} BETWEEN 1 AND 5`),
     }),
 );
 

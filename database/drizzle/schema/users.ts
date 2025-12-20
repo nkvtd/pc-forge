@@ -1,4 +1,5 @@
-import { pgTable, serial, integer, text, numeric, boolean, date, primaryKey } from "drizzle-orm/pg-core";
+import {pgTable, serial, integer, text, numeric, boolean, date, primaryKey, check} from "drizzle-orm/pg-core";
+import {sql} from "drizzle-orm";
 
 export const usersTable = pgTable("users", {
     id: serial("id").primaryKey(),
@@ -25,9 +26,13 @@ export const suggestionsTable = pgTable("suggestions", {
     description: text("description"),
     status: text("status")
         .notNull()
-        .default("pending"), // Pending, Approved, Rejected
+        .default("pending"),
     componentType: text("component_type").notNull()
-});
+    },
+    (t) => ({
+        checkStatus: check("check_status", sql`${t.status} in ('pending', 'approved', 'rejected')`),
+    }),
+);
 
 export type userItem = typeof usersTable.$inferSelect;
 export type userInsert = typeof usersTable.$inferInsert;
