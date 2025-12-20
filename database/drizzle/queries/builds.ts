@@ -1,5 +1,12 @@
 import type { Database } from "../db";
-import {buildComponentsTable, buildsTable, favoriteBuildsTable, ratingBuildsTable, reviewsTable} from "../schema";
+import {
+    buildComponentsTable,
+    buildsTable,
+    componentsTable,
+    favoriteBuildsTable,
+    ratingBuildsTable,
+    reviewsTable, usersTable
+} from "../schema";
 import {eq, desc, and, sql, ilike} from "drizzle-orm";
 
 export async function getPendingBuilds(db: Database) {
@@ -71,7 +78,7 @@ export async function getFavoriteBuilds(db: Database, userId: number) {
 }
 
 export async function getApprovedBuilds(db: Database, limit?: number, q?: string) {
-    let queryConditions = [];
+    let queryConditions = [eq(buildsTable.isApproved, true)];
 
     if (q) {
         queryConditions.push(
@@ -90,7 +97,6 @@ export async function getApprovedBuilds(db: Database, limit?: number, q?: string
         .from(buildsTable)
         .where(
             and (
-                eq(buildsTable.isApproved, true),
                 ...queryConditions
             )
         )
@@ -109,7 +115,8 @@ export async function getHighestRankedBuilds(db: Database, limit? : number) {
             user_id: buildsTable.userId,
             name: buildsTable.name,
             created_at: buildsTable.createdAt,
-            total_price: buildsTable.totalPrice
+            total_price: buildsTable.totalPrice,
+            avgRating: sql<number>`AVG(${ratingBuildsTable.value}::float)`
         })
         .from(buildsTable)
         .innerJoin(
@@ -119,9 +126,7 @@ export async function getHighestRankedBuilds(db: Database, limit? : number) {
         .where(
             eq(buildsTable.isApproved, true)
         )
-        .groupBy(
-            buildsTable.id
-        )
+        .groupBy(buildsTable.id)
         .orderBy(
             desc(sql<number>`AVG(${ratingBuildsTable.value}::float)`)
         )
@@ -130,16 +135,134 @@ export async function getHighestRankedBuilds(db: Database, limit? : number) {
     return highestRankedBuildsList;
 }
 
-export async function getBuildDetails(db: Database, buildId: number) {
-    const buildDetails = await db
-        .select()
-        .from(buildsTable)
-        .where(
-            eq(buildsTable.id, buildId)
-        )
-        .limit(1);
+export async function getBuildDetails(db: Database, buildId: number, userId?: number) {
+    return db.transaction(async (tx) => {
+        const [buildDetails] = await tx
+            .select({
+                id: buildsTable.id,
+                userId: buildsTable.userId,
+                name: buildsTable.name,
+                createdAt: buildsTable.createdAt,
+                description: buildsTable.description,
+                totalPrice: buildsTable.totalPrice,
+                isApproved: buildsTable.isApproved,
+                creator: usersTable.username
+            })
+            .from(buildsTable)
+            .innerJoin(
+                usersTable,
+                eq(buildsTable.userId, usersTable.id)
+            )
+            .where(
+                eq(buildsTable.id, buildId)
+            )
+            .limit(1);
 
-    return buildDetails[0] ?? null;
+        if (!buildDetails) return null;
+
+        const components = await tx
+            .select({
+                componentId: buildComponentsTable.componentId,
+                component: componentsTable
+            })
+            .from(buildComponentsTable)
+            .innerJoin(
+                componentsTable,
+                eq(buildComponentsTable.componentId, componentsTable.id)
+            )
+            .where(
+                eq(buildComponentsTable.buildId, buildId)
+            );
+
+        const reviews = await tx
+            .select({
+                username: usersTable.username,
+                content: reviewsTable.content,
+                createdAt: reviewsTable.createdAt
+            })
+            .from(reviewsTable)
+            .innerJoin(
+                usersTable,
+                eq(reviewsTable.userId, usersTable.id)
+            )
+            .where(
+                eq(reviewsTable.buildId, buildId)
+            )
+            .orderBy(
+                desc(reviewsTable.createdAt)
+            );
+
+        let [ratingStatistics] = await tx
+            .select({
+                averageRating: sql<number>`COALESCE(AVG(${ratingBuildsTable.value}::float), 0)`.as("averageRating"),
+                ratingCount: sql<number>`COUNT(${ratingBuildsTable.value})`.as("ratingCount")
+            })
+            .from(ratingBuildsTable)
+            .where(
+                eq(ratingBuildsTable.buildId, buildId)
+            )
+            .groupBy(ratingBuildsTable.buildId);
+
+        ratingStatistics = {
+            averageRating: Number(ratingStatistics?.averageRating ?? 0),
+            ratingCount: Number(ratingStatistics?.ratingCount ?? 0),
+        }
+
+        let userRating = null;
+        let isFavorite = false;
+        let userReview = null;
+
+        if(userId) {
+            const [rating] = await tx
+                .select()
+                .from(ratingBuildsTable)
+                .where(
+                    and(
+                        eq(ratingBuildsTable.buildId, buildId),
+                        eq(ratingBuildsTable.userId, userId)
+                    )
+                )
+                .limit(1);
+
+            userRating = rating?.value ? Number(rating.value) : null;
+
+            const [favorite] = await tx
+                .select()
+                .from(favoriteBuildsTable)
+                .where(
+                    and(
+                        eq(favoriteBuildsTable.buildId, buildId),
+                        eq(favoriteBuildsTable.userId, userId)
+                    )
+                )
+                .limit(1);
+
+            isFavorite = !!favorite;
+
+            const [review] = await tx
+                .select()
+                .from(reviewsTable)
+                .where(
+                    and(
+                        eq(reviewsTable.buildId, buildId),
+                        eq(reviewsTable.userId, userId)
+                    )
+                )
+                .limit(1);
+
+            userReview = review?.content;
+        }
+
+        return {
+            ...buildDetails,
+            components: components.map(c => c.component),
+            reviews: reviews,
+            ratingStatistics: ratingStatistics,
+            userRating,
+            userReview,
+            isFavorite
+        };
+    });
 }
 
 export async function toggleFavoriteBuild(db: Database, userId: number, buildId: number) {
@@ -183,12 +306,12 @@ export async function setBuildRating(db: Database, userId: number, buildId: numb
         .values({
             userId,
             buildId,
-            value: value.toString()
+            value: value
         })
         .onConflictDoUpdate({
             target: [ratingBuildsTable.userId, ratingBuildsTable.buildId],
             set: {
-                value: value.toString(),
+                value: value,
             },
         });
 }
@@ -274,6 +397,3 @@ export async function cloneBuild(db: Database, userId: number, buildId: number) 
 
     return newBuild.id;
 }
-
-
-

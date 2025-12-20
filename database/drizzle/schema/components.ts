@@ -1,4 +1,5 @@
-import { pgTable, serial, integer, text, numeric, boolean, date, primaryKey } from "drizzle-orm/pg-core";
+import {pgTable, serial, integer, text, numeric, boolean, date, primaryKey, check} from "drizzle-orm/pg-core";
+import {sql} from "drizzle-orm";
 
 export const componentsTable = pgTable("components", {
     id: serial("id").primaryKey(),
@@ -6,7 +7,13 @@ export const componentsTable = pgTable("components", {
     brand: text("brand").notNull(),
     price: numeric("price").notNull(),
     imgUrl: text("img_url"),
-});
+    type: text("type").notNull()
+    },
+    (t) => ({
+        checkType: check("check_type", sql`${t.type} in 
+      ('cpu', 'gpu', 'memory', 'storage', 'power_supply', 'motherboard', 'case', 'cooler', 'memory_card', 'optical_drive', 'sound_card', 'cables', 'network_adapter', 'network_card')`)
+    }),
+);
 
 // Base Components
 export const CPUTable = pgTable("cpu", {
