@@ -26,6 +26,7 @@ export function getAuthState() {
         userId: userId ?? null,
         username: c.session?.user?.name ?? null,
         session: c.session,
+        db: c.db,
     };
 }
 
