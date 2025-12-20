@@ -3,16 +3,42 @@ import {ctx, getAuthState, requireUser} from "../server/telefunc/ctx";
 import {Abort} from "telefunc";
 
 export async function getAuthenticationState() {
-    const c = getAuthState();
+    const context = getAuthState();
 
-    return c;
+    return context;
 }
 
-export async function getPopupAllComponents({ componentType, q, limit }
-                                            : { componentType?: string; q?: string; limit?: number }) {
+export async function getPopupAllComponents({ componentType, limit, q }
+                                            : { componentType?: string; limit?: number; q?: string }) {
     const c = ctx();
 
-    // getAllComponents
+    const components = await drizzleQueries.getAllComponents(c.db, limit, q, componentType);
+
+    return components;
+}
+
+export async function getPopupComponentDetails({ componentId }
+                                           : { componentId: number }) {
+    const context = ctx();
+
+    if(!Number.isInteger(componentId) || componentId <= 0) throw Abort();
+
+    const componentDetails = await drizzleQueries.getComponentDetails(context.db, componentId);
+
+    if(!componentDetails) throw Abort();
+
+    return componentDetails;
+}
+
+export async function getPopupSuggestComponent({ link, description, componentType }
+                                               : { link: string; description: string; componentType: string }) {
+    const { c, userId } = requireUser()
+
+    const newSuggestionId = await drizzleQueries.addComponentSuggestion(c.db, userId, link, description, componentType);
+
+    if(!newSuggestionId) throw Abort();
+
+    return newSuggestionId;
 }
 
 export async function getPopupAllApprovedBuilds({ limit, q }
@@ -37,11 +63,11 @@ export async function getPopupHighestRankedBuilds({ limit }
 
 export async function getPopupBuildDetails({ buildId }
                                            : { buildId: number }) {
-    const context = ctx();
+    const context = getAuthState();
 
     if(!Number.isInteger(buildId) || buildId <= 0) throw Abort();
 
-    const buildDetails = await drizzleQueries.getBuildDetails(context.db, buildId);
+    const buildDetails = await drizzleQueries.getBuildDetails(context.db, buildId, context.userId ?? undefined);
 
     if(!buildDetails) throw Abort();
 
@@ -64,6 +90,8 @@ export async function setPopupRating({ buildId, value }
     const { c, userId } = requireUser()
 
     if (!Number.isInteger(buildId) || buildId <= 0) throw Abort();
+
+    if (!Number.isInteger(value) || value < 1 || value > 5) throw Abort();
 
     const result = await drizzleQueries.setBuildRating(c.db, userId, buildId, value);
 

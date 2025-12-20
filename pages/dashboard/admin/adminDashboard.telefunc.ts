@@ -11,13 +11,13 @@ export async function getAdminInfoAndData() {
 
     const pendingBuilds = await drizzleQueries.getPendingBuilds(c.db);
     const userBuilds = await drizzleQueries.getUserBuilds(c.db, userId);
-    // const componentSuggestions = await drizzleQueries.getComponentSuggestions(c.db);
+    const componentSuggestions = await drizzleQueries.getComponentSuggestions(c.db);
 
     return {
         admin,
         pendingBuilds,
         userBuilds,
-        // componentSuggestions
+        componentSuggestions
     };
 }
 
@@ -39,5 +39,11 @@ export async function setComponentSuggestionStatus({ suggestionId, status, admin
     const { c, userId } = await requireAdmin()
 
 
-    // setComponentSuggestionStatus
+    if(!Number.isInteger(suggestionId) || suggestionId <= 0) throw Abort();
+
+    const result = await drizzleQueries.setComponentSuggestionStatus(c.db, suggestionId, userId, status, adminComment);
+
+    if (!result) throw Abort();
+
+    return { success: true };
 }
