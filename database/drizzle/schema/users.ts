@@ -31,6 +31,8 @@ export const suggestionsTable = pgTable("suggestions", {
     },
     (t) => ({
         checkStatus: check("check_status", sql`${t.status} in ('pending', 'approved', 'rejected')`),
+        checkType: check("check_type", sql`${t.componentType} in 
+      ('cpu', 'gpu', 'memory', 'storage', 'power_supply', 'motherboard', 'case', 'cooler', 'memory_card', 'optical_drive', 'sound_card', 'cables', 'network_adapter', 'network_card')`),
     }),
 );
 

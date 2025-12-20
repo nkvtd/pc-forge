@@ -48,7 +48,7 @@ export const ratingBuildsTable = pgTable("rating_build", {
         userId: integer("user_id")
             .notNull()
             .references(() => usersTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
-        value: numeric("value").notNull(),
+        value: numeric("value", { mode: "number" }).notNull(),
     },
     (t) => ({
         pk: primaryKey({ columns: [t.buildId, t.userId] }),
