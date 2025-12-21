@@ -302,7 +302,7 @@ export const coolerRelations = relations(coolersTable, ({ one, many }) => ({
 
 export const coolerCpuSocketsRelations = relations(coolerCPUSocketsTable, ({ one }) => ({
     cooler: one(coolersTable, {
-        fields: [coolerCPUSocketsTable.cooler_id],
+        fields: [coolerCPUSocketsTable.coolerId],
         references: [coolersTable.componentId],
     }),
 }));
