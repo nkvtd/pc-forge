@@ -1,5 +1,5 @@
 import * as drizzleQueries from "../database/drizzle/queries";
-import {ctx, getAuthState, requireUser} from "../server/telefunc/ctx";
+import {ctx, getAuthState, parseSessionUserId, requireUser} from "../server/telefunc/ctx";
 import {Abort} from "telefunc";
 import type {Database} from "../database/drizzle/db";
 
@@ -64,11 +64,12 @@ export async function onGetHighestRankedBuilds({ limit }
 
 export async function onGetBuildDetails({ buildId }
                                            : { buildId: number }) {
-    const context = getAuthState();
+    const context = ctx();
 
     if(!Number.isInteger(buildId) || buildId <= 0) throw Abort();
 
-    const buildDetails = await drizzleQueries.getBuildDetails(context.db, buildId, context.userId ?? undefined);
+    const userId = parseSessionUserId(context.session?.user?.id);
+    const buildDetails = await drizzleQueries.getBuildDetails(context.db, buildId, userId);
 
     if(!buildDetails) throw Abort();
 

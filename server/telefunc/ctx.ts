@@ -5,10 +5,10 @@ export function ctx() {
     return getContext();
 }
 
-export function parseSessionUserId(sessionUserId: unknown): number | null {
-    if (typeof sessionUserId !== "string" && typeof sessionUserId !== "number") return null;
+export function parseSessionUserId(sessionUserId: unknown): number | undefined {
+    if (typeof sessionUserId !== "string" && typeof sessionUserId !== "number") return undefined;
     const n = Number(sessionUserId);
-    return Number.isInteger(n) && n > 0 ? n : null;
+    return Number.isInteger(n) && n > 0 ? n : undefined;
 }
 
 export function requireUser() {
@@ -26,7 +26,6 @@ export function getAuthState() {
         userId: userId ?? null,
         username: c.session?.user?.name ?? null,
         session: c.session,
-        db: c.db,
     };
 }
 
