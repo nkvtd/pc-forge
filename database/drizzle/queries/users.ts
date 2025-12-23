@@ -68,7 +68,7 @@ export async function setComponentSuggestionStatus(db: Database, suggestionId: n
     return result.rowCount;
 }
 
-export async function addComponentSuggestion(db: Database, userId: number, link: string, description: string, componentType: string) {
+export async function addNewComponentSuggestion(db: Database, userId: number, link: string, description: string, componentType: string) {
     const [newSuggestion] = await db
         .insert(suggestionsTable)
         .values({

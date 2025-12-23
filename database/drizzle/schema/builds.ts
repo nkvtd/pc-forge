@@ -1,4 +1,4 @@
-import {pgTable, serial, integer, text, numeric, boolean, date, primaryKey, check} from "drizzle-orm/pg-core";
+import {pgTable, serial, integer, text, numeric, boolean, date, primaryKey, check, unique} from "drizzle-orm/pg-core";
 import { usersTable } from "./users";
 import { componentsTable } from "./components";
 import {sql} from "drizzle-orm";
@@ -57,17 +57,21 @@ export const ratingBuildsTable = pgTable("rating_build", {
 );
 
 export const reviewsTable = pgTable("review", {
-    id: serial("id").primaryKey(),
+        id: serial("id").primaryKey(),
 
-    buildId: integer("build_id")
-        .notNull()
-        .references(() => buildsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
-    userId: integer("user_id")
-        .notNull()
-        .references(() => usersTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
-    content: text("content").notNull(),
-    createdAt: date("created_at").notNull(),
-});
+        buildId: integer("build_id")
+            .notNull()
+            .references(() => buildsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
+        userId: integer("user_id")
+            .notNull()
+            .references(() => usersTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
+        content: text("content").notNull(),
+        createdAt: date("created_at").notNull()
+    },
+    (t) => ({
+        uniqueUserBuild: unique().on(t.buildId, t.userId),
+    }),
+);
 
 export type buildItem = typeof buildsTable.$inferSelect;
 export type buildInsert = typeof buildsTable.$inferInsert;
