@@ -1,14 +1,15 @@
 import * as drizzleQueries from "../database/drizzle/queries";
 import {ctx, getAuthState, requireUser} from "../server/telefunc/ctx";
 import {Abort} from "telefunc";
+import type {Database} from "../database/drizzle/db";
 
-export async function getAuthenticationState() {
+export async function AuthenticationState() {
     const context = getAuthState();
 
     return context;
 }
 
-export async function getPopupAllComponents({ componentType, limit, q }
+export async function onGetAllComponents({ componentType, limit, q }
                                             : { componentType?: string; limit?: number; q?: string }) {
     const c = ctx();
 
@@ -17,7 +18,7 @@ export async function getPopupAllComponents({ componentType, limit, q }
     return components;
 }
 
-export async function getPopupComponentDetails({ componentId }
+export async function onGetComponentDetails({ componentId }
                                            : { componentId: number }) {
     const context = ctx();
 
@@ -30,18 +31,18 @@ export async function getPopupComponentDetails({ componentId }
     return componentDetails;
 }
 
-export async function getPopupSuggestComponent({ link, description, componentType }
+export async function onSuggestComponent({ link, description, componentType }
                                                : { link: string; description: string; componentType: string }) {
     const { c, userId } = requireUser()
 
-    const newSuggestionId = await drizzleQueries.addComponentSuggestion(c.db, userId, link, description, componentType);
+    const newSuggestionId = await drizzleQueries.addNewComponentSuggestion(c.db, userId, link, description, componentType);
 
     if(!newSuggestionId) throw Abort();
 
     return newSuggestionId;
 }
 
-export async function getPopupAllApprovedBuilds({ limit, q }
+export async function onGetApprovedBuilds({ limit, q }
                                                  : { limit?: number; q?: string }) {
     const context = ctx();
 
@@ -50,7 +51,7 @@ export async function getPopupAllApprovedBuilds({ limit, q }
     return approvedBuilds;
 }
 
-export async function getPopupHighestRankedBuilds({ limit }
+export async function onGetHighestRankedBuilds({ limit }
                                                   : { limit?: number }) {
     const context = ctx();
 
@@ -61,7 +62,7 @@ export async function getPopupHighestRankedBuilds({ limit }
 
 // Shared
 
-export async function getPopupBuildDetails({ buildId }
+export async function onGetBuildDetails({ buildId }
                                            : { buildId: number }) {
     const context = getAuthState();
 
@@ -74,7 +75,7 @@ export async function getPopupBuildDetails({ buildId }
     return buildDetails;
 }
 
-export async function togglePopupFavorite({ buildId }
+export async function onToggleFavorite({ buildId }
                                           : { buildId: number }) {
     const { c, userId } = requireUser()
 
@@ -85,7 +86,7 @@ export async function togglePopupFavorite({ buildId }
     return isFavorite.favorite;
 }
 
-export async function setPopupRating({ buildId, value }
+export async function onSetRating({ buildId, value }
                                      : { buildId: number; value: number }) {
     const { c, userId } = requireUser()
 
@@ -98,7 +99,7 @@ export async function setPopupRating({ buildId, value }
     return { success: true };
 }
 
-export async function setPopupReview({ buildId, content }
+export async function onSetReview({ buildId, content }
                                      : { buildId: number; content: string }) {
     const { c, userId } = requireUser()
 
@@ -109,15 +110,21 @@ export async function setPopupReview({ buildId, content }
     return { success: true };
 }
 
-export async function clonePopupBuild({ buildId }
+export async function onCloneBuild({ buildId }
                                       : { buildId: number }) {
     const { c, userId } = requireUser()
 
     if (!Number.isInteger(buildId) || buildId <= 0) throw Abort();
 
-    const newBuildId = await drizzleQueries.cloneBuild(c.db, userId, buildId);
+    const newBuild = await drizzleQueries.cloneBuild(c.db, userId, buildId);
 
-    if (!newBuildId) throw Abort();
+    if (!newBuild) throw Abort();
 
-    return newBuildId;
+    return newBuild;
 }
+
+
+
+
+
+

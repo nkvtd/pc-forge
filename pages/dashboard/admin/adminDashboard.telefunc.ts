@@ -1,6 +1,7 @@
 import * as drizzleQueries from "../../../database/drizzle/queries";
 import { requireAdmin } from "../../../server/telefunc/ctx";
 import {Abort} from "telefunc";
+import { validateComponentSpecificData } from "../../../database/drizzle/config/componentFieldConfig";
 
 export async function getAdminInfoAndData() {
     const { c, userId } = await requireAdmin();
@@ -21,7 +22,7 @@ export async function getAdminInfoAndData() {
     };
 }
 
-export async function setPopupBuildApprovalStatus({ buildId, isApproved }
+export async function onSetBuildApprovalStatus({ buildId, isApproved }
                                                  : { buildId: number; isApproved: boolean }) {
     const { c, userId } = await requireAdmin()
 
@@ -34,7 +35,7 @@ export async function setPopupBuildApprovalStatus({ buildId, isApproved }
     return { success: true };
 }
 
-export async function setComponentSuggestionStatus({ suggestionId, status, adminComment }
+export async function onSetComponentSuggestionStatus({ suggestionId, status, adminComment }
                                                 : { suggestionId: number; status: string; adminComment: string }) {
     const { c, userId } = await requireAdmin()
 
@@ -46,4 +47,18 @@ export async function setComponentSuggestionStatus({ suggestionId, status, admin
     if (!result) throw Abort();
 
     return { success: true };
+}
+
+export async function onCreateNewComponent({ name, brand, price, imgUrl, type, specificData }
+                                            : { name: string; brand: string; price: number; imgUrl: string; type: string, specificData: any }) {
+
+    const { c, userId } = await requireAdmin()
+
+    if(!validateComponentSpecificData(type, specificData)) throw Abort();
+
+    const newComponentId = await drizzleQueries.addNewComponent(c.db, name, brand, price, imgUrl, type, specificData);
+
+    if(!newComponentId) throw Abort();
+
+    return newComponentId;
 }
