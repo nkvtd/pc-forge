@@ -70,8 +70,8 @@ export default function Navbar() {
                 <Box sx={{ display: 'flex', gap: 1 }}>
                     {auth?.isLoggedIn ? (
                         <>
-                            <Button color="inherit" href="/dashboard/user">{auth.username}</Button>
-                            <Button color="inherit" onClick={handleLogout}>Logout</Button>
+                            <Button sx={onHoverNav} color="inherit" href="/dashboard/user">{auth.username}</Button>
+                            <Button sx={onHoverNav} color="inherit" onClick={handleLogout}>Logout</Button>
                         </>
                     ) : (
                         <>

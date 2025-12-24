@@ -142,6 +142,7 @@ export async function getApprovedBuilds(db: Database, limit?: number, sort?: str
             eq(buildsTable.id, ratingBuildsTable.buildId)
         )
         .groupBy(
+            buildsTable.id,
             buildsTable.userId,
             buildsTable.name,
             buildsTable.createdAt,

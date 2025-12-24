@@ -25,7 +25,7 @@ export default function LoginPage() {
         if (res.url.includes("error")) {
             setError("Invalid username or password");
         } else {
-            window.location.href = "/dashboard/user";
+            window.location.href = "/";
         }
     };
 
