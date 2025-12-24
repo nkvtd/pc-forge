@@ -3,7 +3,7 @@ import {ctx, getAuthState, parseSessionUserId, requireUser} from "../server/tele
 import {Abort} from "telefunc";
 import type {Database} from "../database/drizzle/db";
 
-export async function AuthenticationState() {
+export async function onGetAuthState() {
     const context = getAuthState();
 
     return context;

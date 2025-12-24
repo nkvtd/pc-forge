@@ -6,8 +6,8 @@ import Button from "@mui/material/Button";
 import InputBase from "@mui/material/InputBase";
 import Box from "@mui/material/Box";
 import { styled } from "@mui/material/styles";
-import { fetchAuthState } from "../pages/auth/authState.telefunc";
 import LogoUrl from '../assets/projectlogo.png';
+import {onGetAuthState} from "../pages/+Layout.telefunc";
 
 
 type AuthState = { isLoggedIn: boolean; username: string | null };
@@ -24,7 +24,7 @@ export default function Navbar() {
 
     useEffect(() => {
         let active = true;
-        fetchAuthState()
+        onGetAuthState()
             .then((data) => active && setAuth({ isLoggedIn: data.isLoggedIn, username: data.username }))
             .catch(() => active && setAuth({ isLoggedIn: false, username: null }));
         return () => { active = false; };

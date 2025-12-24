@@ -15,7 +15,7 @@ import ListIcon from '@mui/icons-material/List'; // Icon for "Show All"
 const PLACEHOLDER_IMG = "https://placehold.co/600x400?text=Gaming+PC";
 
 import { onGetHighestRankedBuilds, onCloneBuild } from './buildCards.telefunc';
-import { onGetApprovedBuilds } from '../+Layout.telefunc';
+import {onGetApprovedBuilds, onGetAuthState} from '../+Layout.telefunc';
 import {getAuthState} from "../../server/telefunc/ctx"; //
 
 export default function HomePage() {
@@ -32,7 +32,7 @@ export default function HomePage() {
                 const [
                     authData, highestRankedBuilds, commnityBuilds
                 ] = await Promise.all([
-                    getAuthState(),
+                    onGetAuthState(),
                     onGetHighestRankedBuilds({ limit: 3 }),
                     onGetApprovedBuilds({ limit: 12 })
                 ]);
