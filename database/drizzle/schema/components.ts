@@ -25,7 +25,7 @@ export const CPUTable = pgTable("cpu", {
     threads: integer("threads").notNull(),
     baseClock: numeric("base_clock").notNull(),
     boostClock: numeric("boost_clock"),
-    tdp: numeric("tdp").notNull(),
+    tdp: numeric("tdp").notNull()
 });
 
 export const GPUTable = pgTable("gpu", {
@@ -37,7 +37,7 @@ export const GPUTable = pgTable("gpu", {
     baseClock: numeric("base_clock"),
     boostClock: numeric("boost_clock"),
     chipset: text("chipset").notNull(),
-    length: numeric("length").notNull(),
+    length: numeric("length").notNull()
 });
 
 export const memoryTable = pgTable("memory", {
@@ -47,7 +47,7 @@ export const memoryTable = pgTable("memory", {
     type: text("type").notNull(),
     speed: numeric("speed").notNull(),
     capacity: numeric("capacity").notNull(),
-    modules: integer("modules").notNull(),
+    modules: integer("modules").notNull()
 });
 
 export const powerSupplyTable = pgTable("power_supply", {
@@ -56,7 +56,7 @@ export const powerSupplyTable = pgTable("power_supply", {
         .references(() => componentsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
     type: text("type").notNull(),
     wattage: numeric("wattage").notNull(),
-    formFactor: text("form_factor").notNull(),
+    formFactor: text("form_factor").notNull()
 });
 
 export const pcCasesTable = pgTable("pc_case", {
@@ -64,7 +64,7 @@ export const pcCasesTable = pgTable("pc_case", {
         .primaryKey()
         .references(() => componentsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
     coolerMaxHeight: numeric("cooler_max_height").notNull(),
-    gpuMaxLength: numeric("gpu_max_length").notNull(),
+    gpuMaxLength: numeric("gpu_max_length").notNull()
 });
 
 // Case multi-values
@@ -73,10 +73,10 @@ export const caseStorageFormFactorsTable = pgTable("case_storage_form_factors", 
             .notNull()
             .references(() => pcCasesTable.componentId, {onDelete: "cascade", onUpdate: "cascade" }),
         formFactor: text("form_factor").notNull(),
-        numSlots: integer("num_slots").notNull(),
+        numSlots: integer("num_slots").notNull()
     },
     (t) => ({
-        pk: primaryKey({ columns: [t.caseId, t.formFactor] }),
+        pk: primaryKey({ columns: [t.caseId, t.formFactor] })
     }),
 );
 
@@ -84,10 +84,10 @@ export const casePsFormFactorsTable = pgTable( "case_ps_form_factors", {
         caseId: integer("case_id")
             .notNull()
             .references(() => pcCasesTable.componentId, { onDelete: "cascade", onUpdate: "cascade"}),
-        formFactor: text("form_factor").notNull(),
+        formFactor: text("form_factor").notNull()
     },
     (t) => ({
-        pk: primaryKey({ columns: [t.caseId, t.formFactor] }),
+        pk: primaryKey({ columns: [t.caseId, t.formFactor] })
     }),
 );
 
@@ -95,10 +95,10 @@ export const caseMoboFormFactorsTable = pgTable("case_mobo_form_factors", {
         caseId: integer("case_id")
             .notNull()
             .references(() => pcCasesTable.componentId, { onDelete: "cascade", onUpdate: "cascade"}),
-        formFactor: text("form_factor").notNull(),
+        formFactor: text("form_factor").notNull()
     },
     (t) => ({
-        pk: primaryKey({ columns: [t.caseId, t.formFactor] }),
+        pk: primaryKey({ columns: [t.caseId, t.formFactor] })
     }),
 );
 
@@ -108,7 +108,7 @@ export const coolersTable = pgTable("cooler", {
         .references(() => componentsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
     type: text("type").notNull(),
     height: numeric("height").notNull(),
-    maxTdpSupported: numeric("max_tdp_supported").notNull(),
+    maxTdpSupported: numeric("max_tdp_supported").notNull()
 });
 
 // Cooler multi-values
@@ -116,10 +116,10 @@ export const coolerCPUSocketsTable = pgTable("cooler_cpu_sockets", {
         coolerId: integer("cooler_id")
             .notNull()
             .references(() => coolersTable.componentId, { onDelete: "cascade", onUpdate: "cascade" }),
-        socket: text("socket").notNull(),
+        socket: text("socket").notNull()
     },
     (t) => ({
-        pk: primaryKey({ columns: [t.coolerId, t.socket] }),
+        pk: primaryKey({ columns: [t.coolerId, t.socket] })
     })
 );
 
@@ -134,6 +134,7 @@ export const motherboardsTable = pgTable("motherboard", {
     ramType: text("ram_type").notNull(),
     numRamSlots: integer("num_ram_slots").notNull(),
     maxRamCapacity: numeric("max_ram_capacity").notNull(),
+    pciExpressSlots: numeric("pci_express_slots").notNull()
 });
 
 export const storageTable = pgTable("storage", {
@@ -142,7 +143,7 @@ export const storageTable = pgTable("storage", {
         .references(() => componentsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
     type: text("type").notNull(),
     capacity: numeric("capacity").notNull(),
-    formFactor: text("form_factor").notNull(),
+    formFactor: text("form_factor").notNull()
 });
 
 // Other Components
@@ -151,7 +152,7 @@ export const memoryCardsTable = pgTable("memory_card", {
         .primaryKey()
         .references(() => componentsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
     numSlots: integer("num_slots").notNull(),
-    interface: text("interface").notNull(),
+    interface: text("interface").notNull()
 });
 
 export const opticalDrivesTable = pgTable("optical_drive", {
@@ -162,7 +163,7 @@ export const opticalDrivesTable = pgTable("optical_drive", {
     type: text("type").notNull(),
     interface: text("interface").notNull(),
     writeSpeed: numeric("write_speed").notNull(),
-    readSpeed: numeric("read_speed").notNull(),
+    readSpeed: numeric("read_speed").notNull()
 });
 
 export const soundCardsTable = pgTable("sound_card", {
@@ -173,7 +174,7 @@ export const soundCardsTable = pgTable("sound_card", {
     bitDepth: numeric("bit_depth").notNull(),
     chipset: text("chipset").notNull(),
     interface: text("interface").notNull(),
-    channel: text("channel").notNull(),
+    channel: text("channel").notNull()
 });
 
 export const cablesTable = pgTable("cables", {
@@ -181,7 +182,7 @@ export const cablesTable = pgTable("cables", {
         .primaryKey()
         .references(() => componentsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
     lengthCm: numeric("length_cm").notNull(),
-    type: text("type").notNull(),
+    type: text("type").notNull()
 });
 
 export const networkAdaptersTable = pgTable("network_adapter", {
@@ -190,7 +191,7 @@ export const networkAdaptersTable = pgTable("network_adapter", {
         .references(() => componentsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
     wifiVersion: text("wifi_version").notNull(),
     interface: text("interface").notNull(),
-    numAntennas: integer("num_antennas").notNull(),
+    numAntennas: integer("num_antennas").notNull()
 });
 
 export const networkCardsTable = pgTable("network_card", {
@@ -199,7 +200,7 @@ export const networkCardsTable = pgTable("network_card", {
         .references(() => componentsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
     numPorts: integer("num_ports").notNull(),
     speed: numeric("speed").notNull(),
-    interface: text("interface").notNull(),
+    interface: text("interface").notNull()
 });
 
 export type componentItem = typeof componentsTable.$inferSelect;
