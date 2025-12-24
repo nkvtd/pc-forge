@@ -7,7 +7,7 @@ import {
     ratingBuildsTable,
     reviewsTable, usersTable
 } from "../schema";
-import {eq, desc, and, sql, ilike} from "drizzle-orm";
+import {eq, desc, and, sql, ilike, asc} from "drizzle-orm";
 import {inArray} from "drizzle-orm/sql/expressions/conditions";
 
 export async function getPendingBuilds(db: Database) {
@@ -84,14 +84,48 @@ export async function getFavoriteBuilds(db: Database, userId: number) {
     return favoriteBuildsList;
 }
 
-export async function getApprovedBuilds(db: Database, limit?: number, q?: string) {
+export async function getApprovedBuilds(db: Database, limit?: number, sort?: string, q?: string) {
     let queryConditions = [eq(buildsTable.isApproved, true)];
+    let sortConditions = [];
 
     if (q) {
         queryConditions.push(
             ilike(buildsTable.name, `%${q}%`)
         );
     }
+
+    switch(sort) {
+        case 'price_asc':
+            sortConditions.push(
+                asc(buildsTable.totalPrice)
+            );
+            break;
+        case 'price_desc':
+            sortConditions.push(
+                desc(buildsTable.totalPrice)
+            );
+            break;
+        case 'rating_desc':
+            sortConditions.push(
+                desc(sql<number>`COALESCE(AVG(${ratingBuildsTable.value}::float),0)`)
+            );
+            break;
+        case 'oldest':
+            sortConditions.push(
+                asc(buildsTable.createdAt)
+            );
+            break;
+        case 'newest':
+            sortConditions.push(
+                desc(buildsTable.createdAt)
+            );
+            break;
+        default:
+            sortConditions.push(
+                desc(buildsTable.createdAt)
+            );
+            break;
+        }
 
     const approvedBuildsList = await db
         .select({
@@ -103,13 +137,23 @@ export async function getApprovedBuilds(db: Database, limit?: number, q?: string
             avgRating: sql<number>`AVG(${ratingBuildsTable.value}::float)`
         })
         .from(buildsTable)
+        .leftJoin(
+            ratingBuildsTable,
+            eq(buildsTable.id, ratingBuildsTable.buildId)
+        )
+        .groupBy(
+            buildsTable.userId,
+            buildsTable.name,
+            buildsTable.createdAt,
+            buildsTable.totalPrice
+        )
         .where(
             and (
                 ...queryConditions
             )
         )
         .orderBy(
-            desc(buildsTable.totalPrice)
+            ...sortConditions
         )
         .limit(limit || 100); // 100 placeholder
 
