@@ -43,7 +43,7 @@ export async function onSuggestComponent({ link, description, componentType }
 }
 
 export async function onGetApprovedBuilds({ limit, sort, q }
-                                                 : { limit?: number; sort: string; q?: string }) {
+                                                 : { limit?: number; sort?: string; q?: string }) {
     const context = ctx();
 
     const approvedBuilds = await drizzleQueries.getApprovedBuilds(context.db, limit, sort, q);
