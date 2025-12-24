@@ -18,18 +18,7 @@ export async function onGetAllComponents({ componentType, limit, q }
     return components;
 }
 
-export async function onGetComponentDetails({ componentId }
-                                           : { componentId: number }) {
-    const context = ctx();
 
-    if(!Number.isInteger(componentId) || componentId <= 0) throw Abort();
-
-    const componentDetails = await drizzleQueries.getComponentDetails(context.db, componentId);
-
-    if(!componentDetails) throw Abort();
-
-    return componentDetails;
-}
 
 export async function onSuggestComponent({ link, description, componentType }
                                                : { link: string; description: string; componentType: string }) {
@@ -52,6 +41,19 @@ export async function onGetApprovedBuilds({ limit, sort, q }
 }
 
 // Shared
+
+export async function onGetComponentDetails({ componentId }
+                                            : { componentId: number }) {
+    const context = ctx();
+
+    if(!Number.isInteger(componentId) || componentId <= 0) throw Abort();
+
+    const componentDetails = await drizzleQueries.getComponentDetails(context.db, componentId);
+
+    if(!componentDetails) throw Abort();
+
+    return componentDetails;
+}
 
 export async function onGetBuildDetails({ buildId }
                                            : { buildId: number }) {
