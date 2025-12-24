@@ -13,7 +13,7 @@ export async function onGetAllComponents({ componentType, limit, q }
                                             : { componentType?: string; limit?: number; q?: string }) {
     const c = ctx();
 
-    const components = await drizzleQueries.getAllComponents(c.db, limit, q, componentType);
+    const components = await drizzleQueries.getAllComponents(c.db, limit, componentType, q);
 
     return components;
 }
@@ -114,9 +114,3 @@ export async function onCloneBuild({ buildId }
 
     return newBuild;
 }
-
-
-
-
-
-
