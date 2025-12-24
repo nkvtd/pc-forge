@@ -13,6 +13,10 @@
   "dependencies": {
     "@auth/core": "^0.41.1",
     "@auth/drizzle-adapter": "^1.11.1",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.6",
+    "@mui/material": "^7.3.6",
     "@photonjs/hono": "^0.1.10",
     "@universal-middleware/core": "^0.4.13",
     "bcrypt": "^6.0.0",
@@ -37,7 +41,7 @@
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.2",
-    "drizzle-kit": "^0.31.8",
+    "drizzle-kit": "^0.18.1",
     "typescript": "^5.9.3",
     "vite": "^7.2.7"
   },

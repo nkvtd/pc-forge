@@ -21,5 +21,9 @@
   },
   "exclude": [
     "dist"
+  ],
+  "include": [
+    "./**/*",
+    "./emotion-server.d.ts"
   ]
 }

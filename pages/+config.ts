@@ -1,4 +1,4 @@
-import type { Config } from "vike/types";
+import type {Config} from "vike/types";
 import vikePhoton from "vike-photon/config";
 import vikeReact from "vike-react/config";
 
@@ -6,15 +6,14 @@ import vikeReact from "vike-react/config";
 // https://vike.dev/config
 
 export default {
-  // https://vike.dev/head-tags
-  title: "My Vike App",
-  description: "Demo showcasing Vike",
+    // https://vike.dev/head-tags
+    title: "PC Forge",
+    description: "PC Forge Site",
+    passToClient: ["user"],
+    extends: [vikeReact, vikePhoton],
 
-  passToClient: ["user"],
-  extends: [vikeReact, vikePhoton],
-
-  // https://vike.dev/vike-photon
-  photon: {
-    server: "../server/entry.ts",
-  },
+    // https://vike.dev/vike-photon
+    photon: {
+        server: "../server/entry.ts",
+    },
 } satisfies Config;

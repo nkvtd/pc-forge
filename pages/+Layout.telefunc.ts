@@ -51,15 +51,6 @@ export async function onGetApprovedBuilds({ limit, q }
     return approvedBuilds;
 }
 
-export async function onGetHighestRankedBuilds({ limit }
-                                                  : { limit?: number }) {
-    const context = ctx();
-
-    const highestRankedBuilds = await drizzleQueries.getHighestRankedBuilds(context.db, limit);
-
-    return highestRankedBuilds;
-}
-
 // Shared
 
 export async function onGetBuildDetails({ buildId }
