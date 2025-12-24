@@ -99,7 +99,8 @@ export async function getApprovedBuilds(db: Database, limit?: number, q?: string
             user_id: buildsTable.userId,
             name: buildsTable.name,
             created_at: buildsTable.createdAt,
-            total_price: buildsTable.totalPrice
+            total_price: buildsTable.totalPrice,
+            avgRating: sql<number>`AVG(${ratingBuildsTable.value}::float)`
         })
         .from(buildsTable)
         .where(
