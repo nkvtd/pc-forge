@@ -1,3 +1,24 @@
+import {
+    cablesTable, caseMoboFormFactorsTable, casePsFormFactorsTable,
+    caseStorageFormFactorsTable, coolerCPUSocketsTable, coolersTable,
+    CPUTable,
+    GPUTable, memoryCardsTable,
+    memoryTable, motherboardsTable,
+    networkAdaptersTable,
+    networkCardsTable, opticalDrivesTable, pcCasesTable, powerSupplyTable,
+    soundCardsTable, storageTable
+} from "../schema";
+
+export type ComponentConfig<SelectType = any, InsertType = any> = {
+    table: any;
+    multiTables?: {
+        storageFormFactors?: typeof caseStorageFormFactorsTable;
+        psFormFactors?: typeof casePsFormFactorsTable;
+        moboFormFactors?: typeof caseMoboFormFactorsTable;
+        cpuSockets?: typeof coolerCPUSocketsTable;
+    }
+};
+
 export type ComponentType =
     | 'cpu'
     | 'gpu'
@@ -13,6 +34,35 @@ export type ComponentType =
     | 'cables'
     | 'network_adapter'
     | 'network_card';
+
+export const typeConfigMap: Record<ComponentType, ComponentConfig> = {
+    cpu: { table: CPUTable },
+    gpu: { table: GPUTable },
+    memory: { table: memoryTable },
+    storage: { table: storageTable },
+    power_supply: { table: powerSupplyTable },
+    motherboard: { table: motherboardsTable },
+    case: {
+        table: pcCasesTable,
+        multiTables: {
+            storageFormFactors: caseStorageFormFactorsTable,
+            psFormFactors: casePsFormFactorsTable,
+            moboFormFactors: caseMoboFormFactorsTable,
+        },
+    },
+    cooler: {
+        table: coolersTable,
+        multiTables: {
+            cpuSockets: coolerCPUSocketsTable,
+        },
+    },
+    memory_card: { table: memoryCardsTable },
+    optical_drive: { table: opticalDrivesTable },
+    sound_card: { table: soundCardsTable },
+    cables: { table: cablesTable },
+    network_adapter: { table: networkAdaptersTable },
+    network_card: { table: networkCardsTable },
+};
 
 export const requiredFields: Record<ComponentType, string[]> = {
     cpu: ['socket', 'cores', 'threads', 'baseClock', 'tdp'],

@@ -11,7 +11,7 @@ import {eq, desc, and, sql, ilike, asc} from "drizzle-orm";
 import {inArray} from "drizzle-orm/sql/expressions/conditions";
 
 export async function getPendingBuilds(db: Database) {
-    const pendingBuildsList = await db
+    const pendingBuilds = await db
         .select({
             id: buildsTable.id,
             user_id: buildsTable.userId,
@@ -24,11 +24,11 @@ export async function getPendingBuilds(db: Database) {
             eq(buildsTable.isApproved, false)
         );
 
-    return pendingBuildsList;
+    return pendingBuilds;
 }
 
 export async function getUserBuilds(db: Database, userId: number) {
-    const userBuildsList = await db
+    const userBuilds = await db
         .select({
             id: buildsTable.id,
             user_id: buildsTable.userId,
@@ -41,7 +41,7 @@ export async function getUserBuilds(db: Database, userId: number) {
             eq(buildsTable.userId, userId)
         );
 
-    return userBuildsList;
+    return userBuilds;
 }
 
 export async function setBuildApprovalStatus(db: Database, buildId: number, isApproved: boolean){
@@ -64,7 +64,7 @@ export async function setBuildApprovalStatus(db: Database, buildId: number, isAp
 }
 
 export async function getFavoriteBuilds(db: Database, userId: number) {
-    const favoriteBuildsList = await db
+    const favoriteBuilds = await db
         .select({
             id: buildsTable.id,
             user_id: buildsTable.userId,
@@ -81,7 +81,7 @@ export async function getFavoriteBuilds(db: Database, userId: number) {
             eq(favoriteBuildsTable.userId, userId)
         );
 
-    return favoriteBuildsList;
+    return favoriteBuilds;
 }
 
 export async function getApprovedBuilds(db: Database, limit?: number, sort?: string, q?: string) {
@@ -127,7 +127,7 @@ export async function getApprovedBuilds(db: Database, limit?: number, sort?: str
             break;
         }
 
-    const approvedBuildsList = await db
+    const approvedBuilds = await db
         .select({
             id: buildsTable.id,
             user_id: buildsTable.userId,
@@ -158,7 +158,7 @@ export async function getApprovedBuilds(db: Database, limit?: number, sort?: str
         )
         .limit(limit || 100); // 100 placeholder
 
-    return approvedBuildsList;
+    return approvedBuilds;
 }
 
 export async function getBuildDetails(db: Database, buildId: number, userId?: number) {

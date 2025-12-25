@@ -40,8 +40,6 @@ export async function onGetApprovedBuilds({ limit, sort, q }
     return approvedBuilds;
 }
 
-// Shared
-
 export async function onGetComponentDetails({ componentId }
                                             : { componentId: number }) {
     const context = ctx();

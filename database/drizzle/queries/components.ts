@@ -11,6 +11,8 @@ import {
     ratingBuildsTable, soundCardsTable, storageTable
 } from "../schema";
 import {and, desc, eq, ilike} from "drizzle-orm";
+import {typeConfigMap, ComponentType} from "../config/componentFieldConfig";
+import {AnyPgColumn} from "drizzle-orm/pg-core";
 export async function getAllComponents(db: Database, limit?: number, componentType?: string, q?: string) {
     let queryConditions = [];
 
@@ -26,7 +28,7 @@ export async function getAllComponents(db: Database, limit?: number, componentTy
         );
     }
 
-    const componentsList = await db
+    const components = await db
         .select({
             id: componentsTable.id,
             name: componentsTable.name,
@@ -46,7 +48,7 @@ export async function getAllComponents(db: Database, limit?: number, componentTy
         )
         .limit(limit || 100); // 100 placeholder
 
-    return componentsList;
+    return components;
 }
 
 export async function getComponentDetails(db: Database, componentId: number) {
@@ -60,64 +62,29 @@ export async function getComponentDetails(db: Database, componentId: number) {
 
     if(!component) return null;
 
-    let details: any = {};
+    const config = typeConfigMap[component.type as ComponentType];
 
-    switch (component.type) {
-        case 'cpu':
-            [details] = await db.select().from(CPUTable).where(eq(CPUTable.componentId, componentId));
-            break;
-        case 'gpu':
-            [details] = await db.select().from(GPUTable).where(eq(GPUTable.componentId, componentId));
-            break;
-        case 'memory':
-            [details] = await db.select().from(memoryTable).where(eq(memoryTable.componentId, componentId));
-            break;
-        case 'power_supply':
-            [details] = await db.select().from(powerSupplyTable).where(eq(powerSupplyTable.componentId, componentId));
-            break;
-        case 'case':
-            [details] = await db.select().from(pcCasesTable).where(eq(pcCasesTable.componentId, componentId));
-            if (details) {
-                details.storageFormFactors = await db.select().from(caseStorageFormFactorsTable).where(eq(caseStorageFormFactorsTable.caseId, componentId));
-                details.psFormFactors = await db.select().from(casePsFormFactorsTable).where(eq(casePsFormFactorsTable.caseId, componentId));
-                details.moboFormFactors = await db.select().from(caseMoboFormFactorsTable).where(eq(caseMoboFormFactorsTable.caseId, componentId));
-            }
-            break;
-        case 'cooler':
-            [details] = await db.select().from(coolersTable).where(eq(coolersTable.componentId, componentId));
-            if (details) {
-                details.cpuSockets = await db.select().from(coolerCPUSocketsTable).where(eq(coolerCPUSocketsTable.coolerId, componentId));
-            }
-            break;
-        case 'motherboard':
-            [details] = await db.select().from(motherboardsTable).where(eq(motherboardsTable.componentId, componentId));
-            break;
-        case 'storage':
-            [details] = await db.select().from(storageTable).where(eq(storageTable.componentId, componentId));
-            break;
-        case 'memory_card':
-            [details] = await db.select().from(memoryCardsTable).where(eq(memoryCardsTable.componentId, componentId));
-            break;
-        case 'optical_drive':
-            [details] = await db.select().from(opticalDrivesTable).where(eq(opticalDrivesTable.componentId, componentId));
-            break;
-        case 'sound_card':
-            [details] = await db.select().from(soundCardsTable).where(eq(soundCardsTable.componentId, componentId));
-            break;
-        case 'cables':
-            [details] = await db.select().from(cablesTable).where(eq(cablesTable.componentId, componentId));
-            break;
-        case 'network_adapter':
-            [details] = await db.select().from(networkAdaptersTable).where(eq(networkAdaptersTable.componentId, componentId));
-            break;
-        case 'network_card':
-            [details] = await db.select().from(networkCardsTable).where(eq(networkCardsTable.componentId, componentId));
-            break;
+    const [details] = await db
+        .select()
+        .from(config.table)
+        .where(
+            eq(config.table.componentId, componentId)
+        )
+        .limit(1);
+
+    if (component.type === 'case') {
+        details.storageFormFactors = await db.select().from(caseStorageFormFactorsTable).where(eq(caseStorageFormFactorsTable.caseId, componentId));
+        details.psFormFactors = await db.select().from(casePsFormFactorsTable).where(eq(casePsFormFactorsTable.caseId, componentId));
+        details.moboFormFactors = await db.select().from(caseMoboFormFactorsTable).where(eq(caseMoboFormFactorsTable.caseId, componentId));
+    }
+
+    if (component.type === 'cooler') {
+        details.cpuSockets = await db.select().from(coolerCPUSocketsTable).where(eq(coolerCPUSocketsTable.coolerId, componentId));
     }
 
     return {
         ...component,
-        details: details || null
+        details: details
     };
 }
 
@@ -138,208 +105,116 @@ export async function addNewComponent(db: Database, name: string, brand: string,
 
         const componentId = newComponent.id;
 
-        switch (type) {
-            case 'cpu':
-                await tx.insert(CPUTable).values({
-                    componentId,
-                    socket: specificData.socket,
-                    cores: specificData.cores,
-                    threads: specificData.threads,
-                    baseClock: specificData.baseClock,
-                    boostClock: specificData.boostClock,
-                    tdp: specificData.tdp,
-                });
-                break;
+        const config = typeConfigMap[type as ComponentType];
 
-            case 'gpu':
-                await tx.insert(GPUTable).values({
-                    componentId,
-                    vram: specificData.vram,
-                    tdp: specificData.tdp,
-                    baseClock: specificData.baseClock,
-                    boostClock: specificData.boostClock,
-                    chipset: specificData.chipset,
-                    length: specificData.length,
-                });
-                break;
+        await tx
+            .insert(config.table)
+            .values({
+                componentId: componentId,
+                ...specificData
+            });
 
-            case 'memory':
-                await tx.insert(memoryTable).values({
-                    componentId,
-                    type: specificData.type,
-                    speed: specificData.speed,
-                    capacity: specificData.capacity,
-                    modules: specificData.modules,
-                });
-                break;
+        if (type === 'case') {
+            if (specificData.storageFormFactors) {
+                await tx.insert(caseStorageFormFactorsTable).values(
+                    specificData.storageFormFactors.map((sf: any) => ({
+                        caseId: componentId,
+                        formFactor: sf.formFactor,
+                        numSlots: sf.numSlots,
+                    }))
+                );
+            }
+            if (specificData.psFormFactors) {
+                await tx.insert(casePsFormFactorsTable).values(
+                    specificData.psFormFactors.map((pf: any) => ({
+                        caseId: componentId,
+                        formFactor: pf.formFactor,
+                    }))
+                );
+            }
+            if (specificData.moboFormFactors) {
+                await tx.insert(caseMoboFormFactorsTable).values(
+                    specificData.moboFormFactors.map((mf: any) => ({
+                        caseId: componentId,
+                        formFactor: mf.formFactor,
+                    }))
+                );
+            }
+        }
 
-            case 'power_supply':
-                await tx.insert(powerSupplyTable).values({
-                    componentId,
-                    type: specificData.type,
-                    wattage: specificData.wattage,
-                    formFactor: specificData.formFactor,
-                });
-                break;
-
-            case 'case':
-                await tx.insert(pcCasesTable).values({
-                    componentId,
-                    coolerMaxHeight: specificData.coolerMaxHeight,
-                    gpuMaxLength: specificData.gpuMaxLength,
-                });
-
-                if (specificData.storageFormFactors) {
-                    await tx.insert(caseStorageFormFactorsTable).values(
-                        specificData.storageFormFactors.map((sf: any) => ({
-                            caseId: componentId,
-                            formFactor: sf.formFactor,
-                            numSlots: sf.numSlots,
-                        }))
-                    );
-                }
-
-                if (specificData.psFormFactors) {
-                    await tx.insert(casePsFormFactorsTable).values(
-                        specificData.psFormFactors.map((pf: any) => ({
-                            caseId: componentId,
-                            formFactor: pf.formFactor,
-                        }))
-                    );
-                }
-
-                if (specificData.moboFormFactors) {
-                    await tx.insert(caseMoboFormFactorsTable).values(
-                        specificData.moboFormFactors.map((mf: any) => ({
-                            caseId: componentId,
-                            formFactor: mf.formFactor,
-                        }))
-                    );
-                }
-                break;
-
-            case 'cooler':
-                await tx.insert(coolersTable).values({
-                    componentId,
-                    type: specificData.type,
-                    height: specificData.height,
-                    maxTdpSupported: specificData.maxTdpSupported,
-                });
-
-                if (specificData.cpuSockets) {
-                    await tx.insert(coolerCPUSocketsTable).values(
-                        specificData.cpuSockets.map((socket: string) => ({
-                            coolerId: componentId,
-                            socket: socket,
-                        }))
-                    );
-                }
-                break;
-
-            case 'motherboard':
-                await tx.insert(motherboardsTable).values({
-                    componentId,
-                    socket: specificData.socket,
-                    chipset: specificData.chipset,
-                    formFactor: specificData.formFactor,
-                    ramType: specificData.ramType,
-                    numRamSlots: specificData.numRamSlots,
-                    maxRamCapacity: specificData.maxRamCapacity,
-                    pciExpressSlots: specificData.pciExpressSlots,
-                });
-                break;
-
-            case 'storage':
-                await tx.insert(storageTable).values({
-                    componentId,
-                    type: specificData.type,
-                    capacity: specificData.capacity,
-                    formFactor: specificData.formFactor,
-                });
-                break;
-
-            case 'memory_card':
-                await tx.insert(memoryCardsTable).values({
-                    componentId,
-                    numSlots: specificData.numSlots,
-                    interface: specificData.interface,
-                });
-                break;
-
-            case 'optical_drive':
-                await tx.insert(opticalDrivesTable).values({
-                    componentId,
-                    formFactor: specificData.formFactor,
-                    type: specificData.type,
-                    interface: specificData.interface,
-                    writeSpeed: specificData.writeSpeed,
-                    readSpeed: specificData.readSpeed,
-                });
-                break;
-
-            case 'sound_card':
-                await tx.insert(soundCardsTable).values({
-                    componentId,
-                    sampleRate: specificData.sampleRate,
-                    bitDepth: specificData.bitDepth,
-                    chipset: specificData.chipset,
-                    interface: specificData.interface,
-                    channel: specificData.channel,
-                });
-                break;
-
-            case 'cables':
-                await tx.insert(cablesTable).values({
-                    componentId,
-                    lengthCm: specificData.lengthCm,
-                    type: specificData.type,
-                });
-                break;
-
-            case 'network_adapter':
-                await tx.insert(networkAdaptersTable).values({
-                    componentId,
-                    wifiVersion: specificData.wifiVersion,
-                    interface: specificData.interface,
-                    numAntennas: specificData.numAntennas,
-                });
-                break;
-
-            case 'network_card':
-                await tx.insert(networkCardsTable).values({
-                    componentId,
-                    numPorts: specificData.numPorts,
-                    speed: specificData.speed,
-                    interface: specificData.interface,
-                });
-                break;
-
-            default:
-                return null;
+        if (type === 'cooler' && specificData.cpuSockets) {
+            await tx.insert(coolerCPUSocketsTable).values(
+                specificData.cpuSockets.map((socket: any) => ({ coolerId: componentId, socket }))
+            );
         }
 
         return componentId;
     });
 }
 
-export async function getCompatibleComponents(db: Database, buildId: number, componentType: string) {
-    return db.transaction(async (tx) => {
-        const [build] = await tx
-            .select({
-                buildId: buildsTable.id,
-                userId: buildsTable.userId,
-            })
-            .from(buildsTable)
+export async function getBuildComponents(db: Database, buildId: number) {
+    const [build] = await db
+        .select({
+            buildId: buildsTable.id,
+            userId: buildsTable.userId,
+        })
+        .from(buildsTable)
+        .where(
+            eq(buildsTable.id, buildId)
+        )
+        .limit(1);
+
+    if(!build) return null;
+
+    const components = await db
+        .select({
+            id: componentsTable.id,
+            type: componentsTable.type,
+        })
+        .from(buildComponentsTable)
+        .where(
+            eq(buildComponentsTable.buildId, buildId)
+        )
+        .innerJoin(
+            componentsTable,
+            eq(buildComponentsTable.componentId, componentsTable.id)
+        );
+
+    const componentsDetails = [];
+
+    for (const comp of components) {
+        const config = typeConfigMap[comp.type as ComponentType];
+
+        const [details] = await db
+            .select()
+            .from(config.table)
             .where(
-                eq(buildsTable.id, buildId)
+                eq(config.table.componentId, comp.id)
             )
             .limit(1);
 
-        if(!build) return null;
+        if (comp.type === 'case') {
+            details.storageFormFactors = await db.select().from(caseStorageFormFactorsTable).where(eq(caseStorageFormFactorsTable.caseId, comp.id));
+            details.psFormFactors = await db.select().from(casePsFormFactorsTable).where(eq(casePsFormFactorsTable.caseId, comp.id));
+            details.moboFormFactors = await db.select().from(caseMoboFormFactorsTable).where(eq(caseMoboFormFactorsTable.caseId, comp.id));
+        }
 
+        if (comp.type === 'cooler') {
+            details.cpuSockets = await db.select().from(coolerCPUSocketsTable).where(eq(coolerCPUSocketsTable.coolerId, comp.id));
+        }
 
+        componentsDetails.push({
+            ...comp,
+            details: details
+        });
+    }
+
+    return componentsDetails;
+}
+
+export async function getCompatibleComponents(db: Database, buildId: number, componentType: string) {
+    // TO BE IMPLEMENTED
     return null;
-    });
 }
 
 export async function addComponentToBuild(db: Database, buildId: number, componentId: number) {
