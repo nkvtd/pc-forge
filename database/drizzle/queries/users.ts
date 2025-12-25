@@ -36,7 +36,7 @@ export async function isAdmin(db: Database, userId: number) {
         )
         .limit(1);
 
-    return admin.length > 0;
+    return admin.length ?? null;
 }
 
 export async function getComponentSuggestions(db: Database) {
@@ -65,7 +65,7 @@ export async function setComponentSuggestionStatus(db: Database, suggestionId: n
             eq(suggestionsTable.id, suggestionId)
         );
 
-    return result.rowCount;
+    return result.rowCount ?? null;
 }
 
 export async function addNewComponentSuggestion(db: Database, userId: number, link: string, description: string, componentType: string) {
