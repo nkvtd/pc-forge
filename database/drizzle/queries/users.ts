@@ -3,13 +3,18 @@ import {adminsTable, suggestionsTable, usersTable} from "../schema";
 import {desc, eq} from "drizzle-orm";
 
 export async function createUser(db: Database, username: string, email: string, passwordHash: string) {
-    await db
+    const [newUser] = await db
         .insert(usersTable)
         .values({
             username: username,
             email: email,
             passwordHash: passwordHash,
+        })
+        .returning({
+            id: usersTable.id,
         });
+
+    return newUser?.id ?? null;
 }
 
 export async function getUserProfile(db: Database, userId: number) {
@@ -28,7 +33,7 @@ export async function getUserProfile(db: Database, userId: number) {
 }
 
 export async function isAdmin(db: Database, userId: number) {
-    const admin = await db
+    const [admin] = await db
         .selectDistinct()
         .from(adminsTable)
         .where(
@@ -36,7 +41,7 @@ export async function isAdmin(db: Database, userId: number) {
         )
         .limit(1);
 
-    return admin.length ?? null;
+    return !!admin;
 }
 
 export async function getComponentSuggestions(db: Database) {
@@ -54,7 +59,7 @@ export async function getComponentSuggestions(db: Database) {
 }
 
 export async function setComponentSuggestionStatus(db: Database, suggestionId: number, adminId: number, status: string, adminComment: string) {
-    const result = await db
+    const [result] = await db
         .update(suggestionsTable)
         .set({
             adminId: adminId,
@@ -63,9 +68,12 @@ export async function setComponentSuggestionStatus(db: Database, suggestionId: n
         })
         .where(
             eq(suggestionsTable.id, suggestionId)
-        );
+        )
+        .returning({
+            id: suggestionsTable.id
+        });
 
-    return result.rowCount ?? null;
+    return result?.id ?? null;
 }
 
 export async function addNewComponentSuggestion(db: Database, userId: number, link: string, description: string, componentType: string) {
@@ -77,7 +85,9 @@ export async function addNewComponentSuggestion(db: Database, userId: number, li
             description: description,
             componentType: componentType
         })
-        .returning({ id: suggestionsTable.id });
+        .returning({
+            id: suggestionsTable.id
+        });
 
-    return newSuggestion.id ?? null;
+    return newSuggestion?.id ?? null;
 }

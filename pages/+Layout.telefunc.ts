@@ -28,7 +28,7 @@ export async function onSuggestComponent({ link, description, componentType }
 
     if(!newSuggestionId) throw Abort();
 
-    return newSuggestionId;
+    return { success: true };
 }
 
 export async function onGetApprovedBuilds({ limit, sort, q }
@@ -77,7 +77,7 @@ export async function onToggleFavorite({ buildId }
 
     const isFavorite = await drizzleQueries.toggleFavoriteBuild(c.db, userId, buildId);
 
-    return isFavorite.favorite;
+    return isFavorite;
 }
 
 export async function onSetRating({ buildId, value }

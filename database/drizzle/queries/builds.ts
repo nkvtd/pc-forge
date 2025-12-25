@@ -45,7 +45,7 @@ export async function getUserBuilds(db: Database, userId: number) {
 }
 
 export async function setBuildApprovalStatus(db: Database, buildId: number, isApproved: boolean){
-    const result = await db
+    const [result] = await db
         .update(buildsTable)
         .set({
             isApproved: isApproved
@@ -60,7 +60,7 @@ export async function setBuildApprovalStatus(db: Database, buildId: number, isAp
             id: buildsTable.id
         })
 
-    return result.length;
+    return result?.id ?? null;
 }
 
 export async function getFavoriteBuilds(db: Database, userId: number) {
@@ -134,7 +134,7 @@ export async function getApprovedBuilds(db: Database, limit?: number, sort?: str
             name: buildsTable.name,
             created_at: buildsTable.createdAt,
             total_price: buildsTable.totalPrice,
-            avgRating: sql<number>`AVG(${ratingBuildsTable.value}::float)`
+            avgRating: sql<number>`COALESCE(AVG(${ratingBuildsTable.value}::float),0)`
         })
         .from(buildsTable)
         .leftJoin(
@@ -159,33 +159,6 @@ export async function getApprovedBuilds(db: Database, limit?: number, sort?: str
         .limit(limit || 100); // 100 placeholder
 
     return approvedBuildsList;
-}
-
-export async function getHighestRankedBuilds(db: Database, limit? : number) {
-    const highestRankedBuildsList = await db
-        .select({
-            id: buildsTable.id,
-            user_id: buildsTable.userId,
-            name: buildsTable.name,
-            created_at: buildsTable.createdAt,
-            total_price: buildsTable.totalPrice,
-            avgRating: sql<number>`AVG(${ratingBuildsTable.value}::float)`
-        })
-        .from(buildsTable)
-        .innerJoin(
-            ratingBuildsTable,
-            eq(buildsTable.id, ratingBuildsTable.buildId)
-        )
-        .where(
-            eq(buildsTable.isApproved, true)
-        )
-        .groupBy(buildsTable.id)
-        .orderBy(
-            desc(sql<number>`AVG(${ratingBuildsTable.value}::float)`)
-        )
-        .limit(limit || 100); // 100 placeholder
-
-    return highestRankedBuildsList;
 }
 
 export async function getBuildDetails(db: Database, buildId: number, userId?: number) {
@@ -334,7 +307,7 @@ export async function toggleFavoriteBuild(db: Database, userId: number, buildId:
         )
         .limit(1);
 
-    if (existing.length) {
+    if (existing.length > 0) {
         await db
             .delete(favoriteBuildsTable)
             .where(
@@ -344,7 +317,7 @@ export async function toggleFavoriteBuild(db: Database, userId: number, buildId:
                 )
             );
 
-        return { favorite: false };
+        return null;
     }
 
     await db
@@ -354,7 +327,7 @@ export async function toggleFavoriteBuild(db: Database, userId: number, buildId:
             buildId,
         });
 
-    return { favorite: true };
+    return true;
 }
 
 export async function setBuildRating(db: Database, userId: number, buildId: number, value: number) {
@@ -377,7 +350,7 @@ export async function setBuildRating(db: Database, userId: number, buildId: numb
             value: ratingBuildsTable.value
         })
 
-    return result;
+    return result ?? null;
 }
 
 export async function setBuildReview(db: Database, userId: number,  buildId: number, content: string) {
@@ -403,7 +376,7 @@ export async function setBuildReview(db: Database, userId: number,  buildId: num
             createdAt: reviewsTable.createdAt
         })
 
-    return result;
+    return result ?? null;
 }
 
 export async function cloneBuild(db: Database, userId: number, buildId: number) {
@@ -497,7 +470,7 @@ export async function cloneBuild(db: Database, userId: number, buildId: number) 
 }
 
 export async function deleteBuild(db: Database, userId: number, buildId: number) {
-    const result = await db
+    const [result] = await db
         .delete(buildsTable)
         .where(
             and(
@@ -509,7 +482,7 @@ export async function deleteBuild(db: Database, userId: number, buildId: number)
             id: buildsTable.id
         })
 
-    return result.length;
+    return result?.id ?? null;
 }
 
 export async function addNewBuild(db: Database, userId: number, name: string, description: string, componentIds: number[]) {
@@ -549,7 +522,7 @@ export async function addNewBuild(db: Database, userId: number, name: string, de
                 );
         }
 
-        return newBuild.id;
+        return newBuild?.id ?? null;
     });
 }
 

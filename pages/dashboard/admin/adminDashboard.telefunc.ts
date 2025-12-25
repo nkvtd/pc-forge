@@ -60,5 +60,5 @@ export async function onCreateNewComponent({ name, brand, price, imgUrl, type, s
 
     if(!newComponentId) throw Abort();
 
-    return newComponentId;
+    return { success: true };
 }

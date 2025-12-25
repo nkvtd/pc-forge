@@ -1,16 +1,17 @@
 import type { Database } from "../db";
 import {
+    buildComponentsTable,
     buildsTable, cablesTable, caseMoboFormFactorsTable, casePsFormFactorsTable, caseStorageFormFactorsTable,
     componentsTable, coolerCPUSocketsTable, coolersTable,
     CPUTable,
     GPUTable, memoryCardsTable,
     memoryTable, motherboardsTable,
     networkAdaptersTable,
-    networkCardsTable, opticalDrivesTable, pcCasesTable, powerSupplyTable, soundCardsTable, storageTable
+    networkCardsTable, opticalDrivesTable, pcCasesTable, powerSupplyTable,
+    ratingBuildsTable, soundCardsTable, storageTable
 } from "../schema";
 import {and, desc, eq, ilike} from "drizzle-orm";
-
-export async function getAllComponents(db: Database, limit?: number,  q?: string, componentType?: string) {
+export async function getAllComponents(db: Database, limit?: number, componentType?: string, q?: string) {
     let queryConditions = [];
 
     if (q) {
@@ -58,8 +59,6 @@ export async function getComponentDetails(db: Database, componentId: number) {
         .limit(1);
 
     if(!component) return null;
-
-    if (!component) return null;
 
     let details: any = {};
 
@@ -246,6 +245,7 @@ export async function addNewComponent(db: Database, name: string, brand: string,
                     ramType: specificData.ramType,
                     numRamSlots: specificData.numRamSlots,
                     maxRamCapacity: specificData.maxRamCapacity,
+                    pciExpressSlots: specificData.pciExpressSlots,
                 });
                 break;
 
@@ -321,3 +321,154 @@ export async function addNewComponent(db: Database, name: string, brand: string,
         return componentId;
     });
 }
+
+export async function getCompatibleComponents(db: Database, buildId: number, componentType: string) {
+    return db.transaction(async (tx) => {
+        const [build] = await tx
+            .select({
+                buildId: buildsTable.id,
+                userId: buildsTable.userId,
+            })
+            .from(buildsTable)
+            .where(
+                eq(buildsTable.id, buildId)
+            )
+            .limit(1);
+
+        if(!build) return null;
+
+
+    return null;
+    });
+}
+
+export async function addComponentToBuild(db: Database, buildId: number, componentId: number) {
+    const [build] = await db
+        .select()
+        .from(buildsTable)
+        .where(
+            eq(buildsTable.id, buildId)
+        )
+        .limit(1);
+
+    if(!build) return null;
+
+    const [component] = await db
+        .select()
+        .from(componentsTable)
+        .where(
+            eq(componentsTable.id, componentId)
+        )
+        .limit(1);
+
+    if(!component) return null;
+
+    const existing = await db
+        .select()
+        .from(buildComponentsTable)
+        .where(
+            and(
+                eq(buildComponentsTable.buildId, buildId),
+                eq(buildComponentsTable.componentId, componentId)
+            )
+        )
+        .limit(1);
+
+    if(existing.length > 0) return null;
+
+    const [result] = await db
+        .insert(buildComponentsTable)
+        .values({
+            buildId,
+            componentId
+        })
+        .returning({
+            id: buildComponentsTable.buildId
+        });
+
+    const buildComponents = await db
+        .select({
+            price:  componentsTable.price,
+        })
+        .from(buildComponentsTable)
+        .innerJoin(
+            componentsTable,
+            eq(buildComponentsTable.componentId, componentsTable.id)
+        )
+        .where(
+            eq(buildComponentsTable.buildId, buildId)
+        );
+
+    const totalPrice = buildComponents.reduce((sum, c) => sum + Number(c.price), 0);
+
+     await db
+        .update(buildsTable)
+        .set({
+            totalPrice: totalPrice.toFixed(2)
+        })
+        .where(
+            eq(buildsTable.id, buildId)
+        );
+
+    return result?.id ?? null;
+}
+
+export async function removeComponentFromBuild(db: Database, buildId: number, componentId: number) {
+    const [build] = await db
+        .select()
+        .from(buildsTable)
+        .where(
+            eq(buildsTable.id, buildId)
+        )
+        .limit(1);
+
+    if(!build) return null;
+
+    const [component] = await db
+        .select()
+        .from(componentsTable)
+        .where(
+            eq(componentsTable.id, componentId)
+        )
+        .limit(1);
+
+    if(!component) return null;
+
+    const result = await db
+        .delete(buildComponentsTable)
+        .where(
+            and(
+                eq(buildComponentsTable.buildId, buildId),
+                eq(buildComponentsTable.componentId, componentId)
+            )
+        );
+
+    if(result.rowCount === 0) return null;
+
+    const buildComponents = await db
+        .select({
+            price:  componentsTable.price,
+        })
+        .from(buildComponentsTable)
+        .innerJoin(
+            componentsTable,
+            eq(buildComponentsTable.componentId, componentsTable.id)
+        )
+        .where(
+            eq(buildComponentsTable.buildId, buildId)
+        );
+
+    const totalPrice = buildComponents.reduce((sum, c) => sum + Number(c.price), 0);
+
+    await db
+        .update(buildsTable)
+        .set({
+            totalPrice: totalPrice.toFixed(2)
+        })
+        .where(
+            eq(buildsTable.id, buildId)
+        );
+
+    return result;
+}
+

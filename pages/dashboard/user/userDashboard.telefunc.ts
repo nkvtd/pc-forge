@@ -27,6 +27,8 @@ export async function onDeleteBuild({ buildId }
 
     const result = await drizzleQueries.deleteBuild(c.db, userId, buildId);
 
+    if(!result) throw Abort();
+
     return { success: true };
 }
 

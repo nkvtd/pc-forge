@@ -12,7 +12,9 @@ export async function registerNewUser({ username, email, password }
     if(!username || !email || !password) throw Abort();
 
     const passwordHash = await bcrypt.hash(password, 8);
-    await drizzleQueries.createUser(c.db, username, email, passwordHash);
+    const result = await drizzleQueries.createUser(c.db, username, email, passwordHash);
+
+    if(!result) throw Abort();
 
     return { success: true };
 }
