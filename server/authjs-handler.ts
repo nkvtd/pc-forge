@@ -2,16 +2,17 @@ import { Auth, type AuthConfig, createActionURL, setEnvDefaults } from "@auth/co
 import CredentialsProvider from "@auth/core/providers/credentials";
 import type { Session } from "@auth/core/types";
 import { enhance, type UniversalHandler, type UniversalMiddleware } from "@universal-middleware/core";
-import {eq} from "drizzle-orm";
+import {eq, or} from "drizzle-orm";
 import { db } from "../database/drizzle/db";
-import { usersTable } from "../database/drizzle/schema";
+import {adminsTable, usersTable} from "../database/drizzle/schema";
 import bcrypt from "bcrypt";
-// import { users, accounts, sessions, verificationTokens } from "../database/drizzle/schema/auth";
+import { AuthDrizzleAdapter } from "./drizzle/auth-adapter";
 
 const authjsConfig = {
   basePath: "/api/auth",
   trustHost: true,
   secret: process.env.AUTH_SECRET,
+  adapter: AuthDrizzleAdapter(),
   session: {
     strategy: "jwt",
   },
@@ -26,22 +27,36 @@ const authjsConfig = {
         const username = typeof credentials?.username === "string" ? credentials.username : null;
         const password = typeof credentials?.password === "string" ? credentials.password : null;
 
-        if(!username || !password) { return null; }
+        if(!username || !password || typeof username !== 'string' || typeof password !== 'string') { return null; }
 
         const user = await db.query.usersTable.findFirst({
-            where: eq(usersTable.username, username),
-        });
+            where: or(
+                eq(usersTable.username, username),
+                eq(usersTable.email, username)
+            ),
+          });
 
-        if(!user) { return null; }
+        if(!user) return null;
 
-        const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+        let isPasswordValid = false;
 
-        if(!isPasswordValid) { return null; }
+        if (user.passwordHash.startsWith('$2b$') || user.passwordHash.startsWith('$2a$')) {
+            isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+        } else {
+            isPasswordValid = password === user.passwordHash;
+        }
+
+        if(!isPasswordValid) return null;
+
+          const admin = await db.query.adminsTable.findFirst({
+              where: eq(adminsTable.userId, user.id),
+          });
 
         return {
             id: String(user.id),
-            name: user.username,
+            username: user.username,
             email: user.email,
+            isAdmin: !!admin
         }
       },
     }),
@@ -49,19 +64,30 @@ const authjsConfig = {
 
   callbacks: {
       async jwt({ token, user }) {
-          if (user) token.sub = user.id;
+          if (user) {
+              token.sub = user.id;
+              token.username = user.name;
+
+              const customUser = user as any;
+              token.email = customUser.email;
+              token.isAdmin = customUser.isAdmin;
+          }
           return token;
       },
       async session({ session, token }) {
-          if (session.user && token.sub) session.user.id = token.sub;
+          if (session.user) {
+              session.user.id = token.sub!;
+              session.user.name = token.name as string;
+
+              const customToken = token as any;
+              session.user.email = customToken.email;
+              session.user.isAdmin = customToken.isAdmin;
+          }
           return session;
       },
   },
 } satisfies Omit<AuthConfig, "raw">;
 
-/**
- * Retrieve Auth.js session from Request
- */
 export async function getSession(req: Request, config: Omit<AuthConfig, "raw">): Promise<Session | null> {
   setEnvDefaults(process.env, config);
   const requestURL = new URL(req.url);
@@ -78,10 +104,6 @@ export async function getSession(req: Request, config: Omit<AuthConfig, "raw">):
   throw new Error(typeof data === "object" && "message" in data ? (data.message as string) : undefined);
 }
 
-/**
- * Add Auth.js session to context
- * @link {@see https://authjs.dev/getting-started/session-management/get-session}
- **/
 export const authjsSessionMiddleware: UniversalMiddleware = enhance(
   async (request, context) => {
     try {
@@ -103,10 +125,6 @@ export const authjsSessionMiddleware: UniversalMiddleware = enhance(
   },
 );
 
-/**
- * Auth.js route
- * @link {@see https://authjs.dev/getting-started/installation}
- **/
 export const authjsHandler = enhance(
   async (request) => {
     return Auth(request, authjsConfig);

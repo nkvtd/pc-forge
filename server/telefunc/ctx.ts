@@ -32,8 +32,11 @@ export function getAuthState() {
 export async function requireAdmin() {
     const { c, userId } = requireUser();
 
-    const isAdmin = await drizzleQueries.isAdmin(c.db, userId);
 
+    if(!c.session?.user?.isAdmin === false) throw Abort();
+
+    const isAdmin = await drizzleQueries.isAdmin(c.db, userId);
     if (!isAdmin) throw Abort();
+
     return { c, userId };
 }
