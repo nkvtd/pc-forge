@@ -22,6 +22,9 @@ export async function getPendingBuilds(db: Database) {
         .from(buildsTable)
         .where(
             eq(buildsTable.isApproved, false)
+        )
+        .orderBy(
+            desc(buildsTable.createdAt)
         );
 
     return pendingBuilds;
@@ -39,6 +42,9 @@ export async function getUserBuilds(db: Database, userId: number) {
         .from(buildsTable)
         .where(
             eq(buildsTable.userId, userId)
+        )
+        .orderBy(
+            desc(buildsTable.createdAt)
         );
 
     return userBuilds;
@@ -79,6 +85,9 @@ export async function getFavoriteBuilds(db: Database, userId: number) {
         )
         .where(
             eq(favoriteBuildsTable.userId, userId)
+        )
+        .orderBy(
+            desc(sql<number>`COALESCE(AVG(${ratingBuildsTable.value}::float),0)`)
         );
 
     return favoriteBuilds;
