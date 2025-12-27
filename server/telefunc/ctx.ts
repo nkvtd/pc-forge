@@ -34,7 +34,7 @@ export async function requireAdmin() {
     const { c, userId } = requireUser();
 
 
-    if(!!c.session?.user?.isAdmin) throw Abort();
+    if(!c.session?.user?.isAdmin) throw Abort();
 
     const isAdmin = await drizzleQueries.isAdmin(c.db, userId);
     if (!isAdmin) throw Abort();
