@@ -1,7 +1,7 @@
 import * as drizzleQueries from "../../../database/drizzle/queries";
 import { requireAdmin } from "../../../server/telefunc/ctx";
 import {Abort} from "telefunc";
-import { validateComponentSpecificData } from "../../../database/drizzle/config/componentFieldConfig";
+import { validateComponentSpecificData } from "../../../database/drizzle/util/componentFieldConfig";
 
 export async function getAdminInfoAndData() {
     const { c, userId } = await requireAdmin();

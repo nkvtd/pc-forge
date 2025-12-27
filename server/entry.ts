@@ -13,20 +13,17 @@ function startServer() {
   const app = new Hono();
 
   apply(app, [
-    // Make database available in Context as `context.db`
     dbMiddleware,
 
-    // Append Auth.js session to context
     authjsSessionMiddleware,
 
-    // Auth.js route. See https://authjs.dev/getting-started/installation
     authjsHandler,
 
-    // Telefunc route. See https://telefunc.com
     telefuncHandler,
   ]);
 
   return serve(app, {
     port,
+      hostname: '0.0.0.0',
   });
 }

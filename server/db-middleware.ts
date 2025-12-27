@@ -9,8 +9,6 @@ declare global {
     }
   }
 }
-
-// Add `db` to the Context
 export const dbMiddleware: UniversalMiddleware = enhance(
   async (_request, context) => ({
     ...context,

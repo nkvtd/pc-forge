@@ -8,19 +8,19 @@
     "drizzle:generate": "drizzle-kit generate",
     "drizzle:migrate": "drizzle-kit migrate",
     "drizzle:studio": "drizzle-kit studio",
+    "drizzle:seed": "tsx database/drizzle/util/seed.ts",
     "prod": "vike build && node ./dist/server/index.mjs"
   },
   "dependencies": {
     "@auth/core": "^0.41.1",
-    "@auth/drizzle-adapter": "^1.11.1",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@hono/node-server": "^1.19.7",
     "@mui/icons-material": "^7.3.6",
     "@mui/material": "^7.3.6",
     "@photonjs/hono": "^0.1.10",
     "@universal-middleware/core": "^0.4.13",
     "bcrypt": "^6.0.0",
-    "better-sqlite3": "^12.5.0",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.45.1",
     "hono": "^4.10.7",
@@ -28,6 +28,7 @@
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "telefunc": "^0.2.17",
+    "tsx": "^4.21.0",
     "vike": "^0.4.247",
     "vike-photon": "^0.1.22",
     "vike-react": "^0.6.13"
@@ -35,7 +36,6 @@
   "devDependencies": {
     "@biomejs/biome": "2.3.8",
     "@types/bcrypt": "^6.0.0",
-    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20.19.25",
     "@types/pg": "^8.16.0",
     "@types/react": "^19.2.7",
