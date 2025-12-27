@@ -66,6 +66,7 @@ const authjsConfig = {
       async jwt({ token, user }) {
           if (user) {
               token.sub = user.id;
+
               const customUser = user as any;
               token.username = customUser.username;
               token.email = customUser.email;
