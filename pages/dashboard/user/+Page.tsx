@@ -8,22 +8,24 @@ import {
     Divider,
     Button,
     CircularProgress,
-    Card,
-    CardContent,
-    CardActionArea,
-    IconButton
+    IconButton,
+    Grid,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions
 } from '@mui/material';
-import Grid from '@mui/material/Grid';
-import {Dialog, DialogTitle, DialogContent, DialogActions} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 import PersonIcon from '@mui/icons-material/Person';
 import ComputerIcon from '@mui/icons-material/Computer';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
 
 import {getUserInfoAndData, onDeleteBuild} from "./userDashboard.telefunc";
+import {onCloneBuild} from "../../+Layout.telefunc";
+
+import BuildCard from "../../../components/BuildCard";
+import BuildDetailsDialog from "../../../components/BuildDetailsDialog";
 
 type DashboardData = {
     user: { username: string; email?: string; [key: string]: any };
@@ -35,7 +37,11 @@ export default function UserDashboard() {
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
     const [openMyBuildsDialog, setOpenMyBuildsDialog] = useState(false);
+    const [openFavoritesDialog, setOpenFavoritesDialog] = useState(false);
+
+    const [selectedBuildId, setSelectedBuildId] = useState<number | null>(null);
 
     const loadData = () => {
         getUserInfoAndData()
@@ -59,8 +65,19 @@ export default function UserDashboard() {
         try {
             await onDeleteBuild({buildId});
             loadData();
+            setSelectedBuildId(null);
         } catch (e) {
             alert("Failed to delete build");
+        }
+    };
+
+    const handleCloneWrapper = async (buildId: number) => {
+        if (!data?.user) return alert("Please login to clone builds!");
+        if (confirm(`Clone this build to your dashboard?`)) {
+            await onCloneBuild({buildId});
+            alert("Build cloned! Check your dashboard.");
+            setSelectedBuildId(null);
+            loadData();
         }
     };
 
@@ -68,12 +85,11 @@ export default function UserDashboard() {
     if (error || !data) return <Container sx={{mt: 5, textAlign: 'center'}}><Typography color="error"
                                                                                         variant="h6">{error}</Typography><Button
         href="/auth/login" variant="contained">Login</Button></Container>;
+    // console.log("Current User ID passed to dialog:", data?.user?.id);
 
-    // @ts-ignore
     return (
         <Container maxWidth="xl" sx={{mt: 4, mb: 4, color: 'white'}}>
             <Grid container spacing={3}>
-
                 <Grid item xs={12} md={3}>
                     <Paper elevation={3}
                            sx={{p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%'}}>
@@ -82,7 +98,6 @@ export default function UserDashboard() {
                         <Typography variant="h5" fontWeight="bold" gutterBottom>{data.user.username}</Typography>
                         <Typography variant="body2" color="text.secondary" gutterBottom>{data.user.email}</Typography>
                         <Divider sx={{width: '100%', my: 2}}/>
-                        {/*<Button variant="outlined" fullWidth color="primary" sx={{mb: 1}}>Edit Profile</Button>*/}
                     </Paper>
                 </Grid>
 
@@ -91,9 +106,26 @@ export default function UserDashboard() {
 
                         <Grid item xs={12}>
                             <Paper elevation={3} sx={{p: 3, minHeight: '300px', bgcolor: '#1e1e1e'}}>
-                                <Box sx={{display: 'flex', alignItems: 'center', mb: 2}}>
-                                    <FavoriteIcon color="error" sx={{mr: 1}}/>
-                                    <Typography variant="h6" fontWeight="bold">Favorited Builds</Typography>
+                                <Box sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    mb: 2
+                                }}>
+                                    <Box sx={{display: 'flex', alignItems: 'center'}}>
+                                        <FavoriteIcon color="error" sx={{mr: 1}}/>
+                                        <Typography variant="h6" fontWeight="bold">Favorited Builds</Typography>
+                                    </Box>
+
+                                    {data.favoriteBuilds.length > 4 && (
+                                        <Button
+                                            variant="outlined"
+                                            size="small"
+                                            onClick={() => setOpenFavoritesDialog(true)}
+                                        >
+                                            See All ({data.favoriteBuilds.length})
+                                        </Button>
+                                    )}
                                 </Box>
                                 <Divider sx={{mb: 2}}/>
 
@@ -102,9 +134,12 @@ export default function UserDashboard() {
                                         any builds yet.</Typography>
                                 ) : (
                                     <Grid container spacing={2}>
-                                        {data.favoriteBuilds.map((build: any) => (
+                                        {data.favoriteBuilds.slice(0, 4).map((build: any) => (
                                             <Grid item xs={12} sm={6} md={4} key={build.id}>
-                                                <BuildCard build={build}/>
+                                                <BuildCard
+                                                    build={build}
+                                                    onClick={() => setSelectedBuildId(build.id)}
+                                                />
                                             </Grid>
                                         ))}
                                     </Grid>
@@ -147,12 +182,11 @@ export default function UserDashboard() {
                                     </Box>
                                 ) : (
                                     <Grid container spacing={2}>
-                                        {data.userBuilds.slice(0, 3).map((build: any) => (
-                                            <Grid item xs={12} sm={6} md={3} key={build.id}>
+                                        {data.userBuilds.slice(0, 4).map((build: any) => (
+                                            <Grid item xs={12} sm={6} md={4} key={build.id}>
                                                 <BuildCard
                                                     build={build}
-                                                    onDelete={() => handleDelete(build.id)}
-                                                    isOwner={true}
+                                                    onClick={() => setSelectedBuildId(build.id)}
                                                 />
                                             </Grid>
                                         ))}
@@ -161,10 +195,10 @@ export default function UserDashboard() {
                             </Paper>
                         </Grid>
 
-                        <Dialog open={openMyBuildsDialog} onClose={() => setOpenMyBuildsDialog(false)} maxWidth="md"
+                        <Dialog open={openMyBuildsDialog} onClose={() => setOpenMyBuildsDialog(false)} maxWidth="lg"
                                 fullWidth>
-                            <DialogTitle sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>All
-                                My Builds
+                            <DialogTitle sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                All My Builds
                                 <IconButton onClick={() => setOpenMyBuildsDialog(false)}>
                                     <CloseIcon/>
                                 </IconButton>
@@ -175,50 +209,62 @@ export default function UserDashboard() {
                                         <Grid item xs={12} sm={6} md={4} key={build.id}>
                                             <BuildCard
                                                 build={build}
-                                                onDelete={() => handleDelete(build.id)}
-                                                isOwner={true}
+                                                onClick={() => {
+                                                    setOpenMyBuildsDialog(false);
+                                                    setSelectedBuildId(build.id);
+                                                }}
                                             />
                                         </Grid>
                                     ))}
                                 </Grid>
                             </DialogContent>
-
                             <DialogActions>
                                 <Button onClick={() => setOpenMyBuildsDialog(false)}>Close</Button>
+                            </DialogActions>
+                        </Dialog>
+
+                        <Dialog open={openFavoritesDialog} onClose={() => setOpenFavoritesDialog(false)} maxWidth="lg"
+                                fullWidth>
+                            <DialogTitle sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                All Favorited Builds
+                                <IconButton onClick={() => setOpenFavoritesDialog(false)}>
+                                    <CloseIcon/>
+                                </IconButton>
+                            </DialogTitle>
+                            <DialogContent dividers>
+                                <Grid container spacing={2} sx={{mt: 1}}>
+                                    {data.favoriteBuilds.map((build: any) => (
+                                        <Grid item xs={12} sm={6} md={4} key={build.id}>
+                                            <BuildCard
+                                                build={build}
+                                                onClick={() => {
+                                                    setOpenFavoritesDialog(false);
+                                                    setSelectedBuildId(build.id);
+                                                }}
+                                            />
+                                        </Grid>
+                                    ))}
+                                </Grid>
+                            </DialogContent>
+                            <DialogActions>
+                                <Button onClick={() => setOpenFavoritesDialog(false)}>Close</Button>
                             </DialogActions>
                         </Dialog>
 
                     </Grid>
                 </Grid>
             </Grid>
+
+            <BuildDetailsDialog
+                open={!!selectedBuildId}
+                buildId={selectedBuildId}
+                currentUser={data?.user?.id ? Number(data.user.id) : undefined}
+                onClose={() => {
+                    setSelectedBuildId(null);
+                    loadData();
+                }}
+                onClone={handleCloneWrapper}
+            />
         </Container>
-    );
-}
-
-function BuildCard({build, onDelete, isOwner}: { build: any, onDelete?: () => void, isOwner?: boolean }) {
-    return (
-        <Card sx={{height: '100%', display: 'flex', flexDirection: 'column'}}>
-            <CardActionArea href={`/build/${build.id}`} sx={{flexGrow: 1}}>
-                <CardContent>
-                    <Typography variant="subtitle1" fontWeight="bold" noWrap>
-                        {build.name || `Build #${build.id}`}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                        Created: {build.createdAt ? new Date(build.createdAt).toLocaleDateString() : 'Unknown'}
-                    </Typography>
-                </CardContent>
-            </CardActionArea>
-
-            {isOwner && (
-                <Box sx={{display: 'flex', justifyContent: 'flex-end', p: 1, borderTop: '1px solid #eee'}}>
-                    <IconButton size="small" href={`/build/edit/${build.id}`} color="primary">
-                        <EditIcon fontSize="small"/>
-                    </IconButton>
-                    <IconButton size="small" onClick={onDelete} color="error">
-                        <DeleteIcon fontSize="small"/>
-                    </IconButton>
-                </Box>
-            )}
-        </Card>
     );
 }

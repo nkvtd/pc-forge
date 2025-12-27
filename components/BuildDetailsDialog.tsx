@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, Button, Grid, Box, Typography,
-    IconButton, Tab, Tabs, Table, TableBody, TableCell, TableRow, Rating, TextField, Avatar, Divider, Chip, CardMedia
+    IconButton, Tab, Tabs, Table, TableBody, TableCell, TableRow, Rating, TextField, Avatar, Chip
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import { onGetBuildDetails, onSetReview, onToggleFavorite } from '../pages/+Layout.telefunc';
 import PersonIcon from "@mui/icons-material/Person";
+import { onGetBuildDetails, onSetReview, onToggleFavorite } from '../pages/+Layout.telefunc';
 
 const formatPrice = (price: any) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(price) || 0);
 
@@ -23,6 +23,9 @@ export default function BuildDetailsDialog({ open, buildId, onClose, onClone, cu
     useEffect(() => {
         if (open && buildId) {
             setLoading(true);
+            setReviewText("");
+            setRatingVal(5);
+
             onGetBuildDetails({ buildId })
                 .then(data => {
                     setDetails(data);
@@ -42,6 +45,8 @@ export default function BuildDetailsDialog({ open, buildId, onClose, onClone, cu
     const handleSubmitReview = async () => {
         if (!currentUser) return alert("Please login to review.");
         await onSetReview({ buildId, content: reviewText });
+
+        setReviewText("");
 
         const refreshed = await onGetBuildDetails({ buildId });
         setDetails(refreshed);
@@ -80,28 +85,20 @@ export default function BuildDetailsDialog({ open, buildId, onClose, onClone, cu
 
                         <Box sx={{ p: 3 }}>
                             {tabIndex === 0 && (
-                                <Grid container spacing={4}>
+                                <Grid container spacing={2}>
                                     <Grid item xs={12} md={8}>
                                         <Table size="small">
                                             <TableBody>
                                                 {details.components.map((comp: any) => (
                                                     <TableRow key={comp.id}>
                                                         <TableCell sx={{ width: 50 }}>
-                                                            {/*<Avatar*/}
-                                                            {/*    src={comp.img_url || undefined}*/}
-                                                            {/*    variant="rounded"*/}
-                                                            {/*    sx={{ width: 40, height: 40, bgcolor: '#ff8201' }}*/}
-                                                            {/*>*/}
-                                                            {/*    {comp.type?.[0]?.toUpperCase()}*/}
-                                                            {/*</Avatar>*/}
-                                                            {/*<PersonIcon sx={{ fontSize: 16 }} />*/}
-                                                            <CardMedia
-                                                                component="img"
-                                                                height="50"
-                                                                width="50"
-                                                                image={"https://placehold.co/400x400?text=CPU"}
-
-                                                            />
+                                                            <Avatar
+                                                                src={comp.img_url || undefined}
+                                                                variant="rounded"
+                                                                sx={{ width: 45, height: 45, bgcolor: '#ff8201'}}
+                                                            >
+                                                                {comp.type?.substring(0, 3)?.toUpperCase()}
+                                                            </Avatar>
                                                         </TableCell>
                                                         <TableCell>
                                                             <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', textTransform: 'uppercase' }}>

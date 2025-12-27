@@ -1,10 +1,10 @@
 import React from 'react';
 import { Card, CardMedia, CardContent, Typography, Box, Chip } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
-import PersonIcon from '@mui/icons-material/Person';
+// import PersonIcon from '@mui/icons-material/Person';
 
 export default function BuildCard({ build, onClick }: { build: any, onClick: () => void }) {
-    const formattedPrice = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(build.total_price || 0);
+    const formattedPrice = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' }).format(build.total_price || 0);
 
     return (
         <Card
@@ -24,10 +24,8 @@ export default function BuildCard({ build, onClick }: { build: any, onClick: () 
 
                 {/*Ne se renderira user-ot*/}
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, color: 'text.secondary' }}>
-                {/*    <PersonIcon sx={{ fontSize: 16, mr: 0.5 }} />*/}
-                {/*    <Typography variant="caption">{build.user || 'Unknown'}</Typography>*/}
-                    <Typography variant="h6" gutterBottom noWrap title={build.cpu}>{build.cpu}</Typography>
-                    <Typography variant="h6" gutterBottom noWrap title={build.gpu}>{build.gpu}</Typography>
+                    {/*    <PersonIcon sx={{ fontSize: 16, mr: 0.5 }} />*/}
+                    {/*    <Typography variant="caption">{build.user || 'Unknown'}</Typography>*/}
                 </Box>
 
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}>
@@ -35,7 +33,7 @@ export default function BuildCard({ build, onClick }: { build: any, onClick: () 
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <StarIcon fontSize="small" sx={{ color: '#faaf00', mr: 0.5 }} />
                         <Typography variant="body2" fontWeight="bold">
-                            {Number(build.avg_rating || 5).toFixed(1)}
+                            {Number(build.avgRating || 5).toFixed(1)}
                         </Typography>
                     </Box>
                 </Box>

@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import {
-    Container, Grid, Box, Typography, TextField, MenuItem, Select,
-    Slider, Button, Paper, InputAdornment
+    Container, Box, Typography, TextField, MenuItem, Select,
+    Slider, Button, Paper, InputAdornment, CircularProgress
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 
 import BuildCard from '../../components/BuildCard';
 import BuildDetailsDialog from '../../components/BuildDetailsDialog';
-
 import { onGetApprovedBuilds, onCloneBuild, onGetAuthState } from '../+Layout.telefunc';
 
 export default function CompletedBuildsPage() {
@@ -26,7 +25,7 @@ export default function CompletedBuildsPage() {
         try {
             const [userData, data] = await Promise.all([
                 onGetAuthState(),
-                onGetApprovedBuilds({ q: searchQuery })
+                onGetApprovedBuilds({q: searchQuery})
             ]);
             setUserId(userData.userId);
 
@@ -57,14 +56,12 @@ export default function CompletedBuildsPage() {
             });
 
             setBuilds(sortedData);
+        } catch (e) {
+            console.error("Failed to load builds", e);
         } finally {
             setLoading(false);
         }
     };
-
-    useEffect(() => {
-        loadBuilds();
-    }, [sortBy, priceRange, searchQuery]);
 
     useEffect(() => {
         loadBuilds();
@@ -73,21 +70,25 @@ export default function CompletedBuildsPage() {
     const handleClone = async (buildId: number) => {
         if (!userId) return alert("Please login to clone builds!");
         if (confirm(`Clone this build?`)) {
-            await onCloneBuild({ buildId });
+            await onCloneBuild({buildId});
             alert("Build cloned!");
             setSelectedBuildId(null);
         }
     };
 
     return (
-        <Container maxWidth="xl" sx={{ mt: 4, mb: 10 }}>
+        <Container maxWidth={false} sx={{ mt: 4, mb: 10, px: { xs: 2, md: 4 } }}>
             <Typography variant="h4" fontWeight="bold" gutterBottom>Completed Builds</Typography>
             <Typography color="text.secondary" sx={{ mb: 4 }}>
                 Browse community configurations. Filter by price, components, or popularity.
             </Typography>
 
-            <Grid container spacing={4}>
-                <Grid item xs={12} md={3}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
+
+                <Box sx={{
+                    width: { xs: '100%', md: '280px' },
+                    flexShrink: 0
+                }}>
                     <Paper variant="outlined" sx={{ p: 3, position: 'sticky', top: 20 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                             <FilterListIcon sx={{ mr: 1 }} />
@@ -126,10 +127,9 @@ export default function CompletedBuildsPage() {
                             Apply Filters
                         </Button>
                     </Paper>
-                </Grid>
+                </Box>
 
-                <Grid item xs={12} md={9}>
-                    {/* Toolbar */}
+                <Box sx={{ flexGrow: 1 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                         <Typography fontWeight="bold">{builds.length} Builds Found</Typography>
 
@@ -151,31 +151,42 @@ export default function CompletedBuildsPage() {
                     </Box>
 
                     {loading ? (
-                        <Box sx={{ p: 5, textAlign: 'center' }}>Loading...</Box>
+                        <Box sx={{ p: 5, textAlign: 'center' }}>
+                            <CircularProgress />
+                        </Box>
                     ) : (
-                        <Grid container spacing={3}>
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                gridTemplateColumns: {
+                                    xs: '1fr',
+                                    sm: 'repeat(2, 1fr)',
+                                    md: 'repeat(3, 1fr)',
+                                    lg: 'repeat(4, 1fr)',
+                                    xl: 'repeat(5, 1fr)'
+                                },
+                                gap: 3,
+                                width: '100%'
+                            }}
+                        >
                             {builds.map((build) => (
-                                <Grid item xs={12} sm={6} lg={4} key={build.id} sx={{ display: 'flex' }}>
-                                    <Box sx={{ width: '100%' }}>
-                                        <BuildCard
-                                            build={build}
-                                            onClick={() => setSelectedBuildId(build.id)}
-                                        />
-                                    </Box>
-                                </Grid>
+                                <BuildCard
+                                    key={build.id}
+                                    build={build}
+                                    onClick={() => setSelectedBuildId(build.id)}
+                                />
                             ))}
                             {builds.length === 0 && (
-                                <Grid item xs={12}>
-                                    <Box sx={{ p: 5, textAlign: 'center', bgcolor: '#f5f5f5', borderRadius: 2 }}>
-                                        <Typography>No builds found matching your filters.</Typography>
-                                    </Box>
-                                </Grid>
+                                <Box sx={{ gridColumn: '1 / -1', p: 5, textAlign: 'center', bgcolor: '#f5f5f5', borderRadius: 2 }}>
+                                    <Typography>No builds found matching your filters.</Typography>
+                                </Box>
                             )}
-                        </Grid>
+                        </Box>
                     )}
-                </Grid>
-            </Grid>
+                </Box>
+            </Box>
 
+            {/* @ts-ignore */}
             <BuildDetailsDialog
                 open={!!selectedBuildId}
                 buildId={selectedBuildId}
@@ -185,5 +196,5 @@ export default function CompletedBuildsPage() {
             />
         </Container>
     );
-}
 
+}

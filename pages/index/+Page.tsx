@@ -13,20 +13,24 @@ import { onGetApprovedBuilds, onGetAuthState, onCloneBuild } from '../+Layout.te
 
 export default function HomePage() {
     const [data, setData] = useState<any>(null);
+    const [allRanked, setAllRanked] = useState<any[]>([]);
 
     const [selectedBuildId, setSelectedBuildId] = useState<number | null>(null);
-
     const [openRankedPopup, setOpenRankedPopup] = useState(false);
 
     useEffect(() => {
         async function loadSite() {
             try {
                 const [
-                    authData, highestRankedBuilds, communityBuilds
+                    authData,
+                    highestRankedBuilds,
+                    communityBuilds,
+                    fullRankedList
                 ] = await Promise.all([
                     onGetAuthState(),
-                    onGetApprovedBuilds({ limit: 3 , sort: 'rating_desc' }),
-                    onGetApprovedBuilds({ limit: 12 })
+                    onGetApprovedBuilds({ limit: 5 , sort: 'rating_desc' }),
+                    onGetApprovedBuilds({ limit: 12 }),
+                    onGetApprovedBuilds({ limit: 10, sort: 'rating_desc' })
                 ]);
 
                 setData({
@@ -35,6 +39,7 @@ export default function HomePage() {
                     prebuilts: highestRankedBuilds,
                     communityBuilds: communityBuilds
                 });
+                setAllRanked(fullRankedList);
             } catch (error) {
                 console.error("Error loading homepage data:", error);
             }
@@ -68,7 +73,7 @@ export default function HomePage() {
                     <Typography variant="h5" sx={{ maxWidth: '800px', mx: 'auto', mb: 1 }}>
                         Build, share, discuss, and discover custom PC configurations.
                     </Typography>
-                    <Button variant="contained" size="large" href="/forger" startIcon={<AutoFixHighIcon />}
+                    <Button variant="contained" size="large" href="/forge" startIcon={<AutoFixHighIcon />}
                             sx={{ fontSize: '1.2rem', px: 4, py: 1.5, mt: 2 }}>
                         Start Forging
                     </Button>
@@ -91,17 +96,7 @@ export default function HomePage() {
                     </Button>
                 </Box>
 
-                <Grid container spacing={2} sx={{ mb: 8, alignItems: 'stretch' }}>
-                    {/*<Grid item xs={12} md={3} sx={{ display: 'flex' }}>*/}
-                    {/*    <Box sx={{*/}
-                    {/*        width: '100%', p: 3, bgcolor: '#ff8201', color: 'black', borderRadius: 2,*/}
-                    {/*        display: 'flex', flexDirection: 'column', justifyContent: 'center'*/}
-                    {/*    }}>*/}
-                    {/*        <Typography color={'black'} variant="h5" fontWeight="bold" gutterBottom>The Elite</Typography>*/}
-                    {/*        <Typography variant="body1" fontWeight="bold">The top 3 community-voted builds.</Typography>*/}
-                    {/*    </Box>*/}
-                    {/*</Grid>*/}
-
+                <Grid container spacing={3} sx={{ mb: 8, alignItems: 'stretch' }}>
                     {data.prebuilts.slice(0, 3).map((build: any) => (
                         <Grid item xs={12} sm={6} md={3} key={build.id} sx={{ display: 'flex' }}>
                             <Box sx={{ width: '100%' }}>
@@ -113,7 +108,6 @@ export default function HomePage() {
                         </Grid>
                     ))}
                 </Grid>
-
 
                 <SectionHeader title="Community Forge" subtitle="Fresh builds from users around the world."/>
                 <Grid container spacing={3}>
@@ -132,7 +126,6 @@ export default function HomePage() {
                 </Box>
             </Container>
 
-
             <BuildDetailsDialog
                 open={!!selectedBuildId}
                 buildId={selectedBuildId}
@@ -141,23 +134,32 @@ export default function HomePage() {
                 onClone={handleCloneWrapper}
             />
 
-
-            <Dialog open={openRankedPopup} onClose={() => setOpenRankedPopup(false)} maxWidth="lg" fullWidth>
+            <Dialog open={openRankedPopup} onClose={() => setOpenRankedPopup(false)} maxWidth="lg" fullWidth scroll="paper">
                 <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    Hall of Fame (All Top Ranked)
+                    Hall of Fame (Top Rated)
                     <IconButton onClick={() => setOpenRankedPopup(false)}><CloseIcon /></IconButton>
                 </DialogTitle>
                 <DialogContent dividers>
                     <Grid container spacing={3}>
-                        {data.prebuilts.concat(data.communityBuilds).map((build: any) => (
-                            <Grid item xs={12} sm={6} md={3} key={`popup-${build.id}`}>
-                                <BuildCard
-                                    build={build}
-                                    onClick={() => {
-                                        setOpenRankedPopup(false);
-                                        setSelectedBuildId(build.id); // Open details from popup
-                                    }}
-                                />
+                        {allRanked.map((build: any, index: number) => (
+                            <Grid item xs={12} sm={6} md={3} key={`ranked-${build.id}`}>
+                                <Box sx={{ position: 'relative' }}>
+                                    <Box sx={{
+                                        position: 'absolute', top: -10, left: -10, zIndex: 1,
+                                        width: 30, height: 30, borderRadius: '50%',
+                                        bgcolor: index < 3 ? '#ff8201' : 'grey.700', color: 'white',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'
+                                    }}>
+                                        #{index + 1}
+                                    </Box>
+                                    <BuildCard
+                                        build={build}
+                                        onClick={() => {
+                                            setOpenRankedPopup(false);
+                                            setSelectedBuildId(build.id);
+                                        }}
+                                    />
+                                </Box>
                             </Grid>
                         ))}
                     </Grid>
@@ -170,7 +172,7 @@ export default function HomePage() {
 
 function SectionHeader({ title, subtitle }: { title: string, subtitle: string }) {
     return (
-        <Box sx={{ mb: 4, borderLeft: '5px solid #1976d2', pl: 2 }}>
+        <Box sx={{ mb: 4, borderLeft: '5px solid #ff8201', pl: 2 }}>
             <Typography variant="h4" fontWeight="bold" color="text.primary">{title}</Typography>
             <Typography variant="subtitle1" color="text.secondary">{subtitle}</Typography>
         </Box>
