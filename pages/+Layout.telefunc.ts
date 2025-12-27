@@ -9,11 +9,11 @@ export async function onGetAuthState() {
     return context;
 }
 
-export async function onGetAllComponents({ componentType, limit, q }
-                                            : { componentType?: string; limit?: number; q?: string }) {
+export async function onGetAllComponents({ componentType, limit, sort, q }
+                                            : { componentType?: string; limit?: number; sort?: string, q?: string }) {
     const c = ctx();
 
-    const components = await drizzleQueries.getAllComponents(c.db, limit, componentType, q);
+    const components = await drizzleQueries.getAllComponents(c.db, limit, componentType, sort, q);
 
     return components;
 }

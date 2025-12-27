@@ -107,7 +107,7 @@ export async function getFavoriteBuilds(db: Database, userId: number) {
 
 export async function getApprovedBuilds(db: Database, limit?: number, sort?: string, q?: string) {
     let queryConditions = [eq(buildsTable.isApproved, true)];
-    let sortConditions = [];
+    let sortCondition:any;
 
     if (q) {
         queryConditions.push(
@@ -117,34 +117,22 @@ export async function getApprovedBuilds(db: Database, limit?: number, sort?: str
 
     switch(sort) {
         case 'price_asc':
-            sortConditions.push(
-                asc(buildsTable.totalPrice)
-            );
+            sortCondition = asc(buildsTable.totalPrice)
             break;
         case 'price_desc':
-            sortConditions.push(
-                desc(buildsTable.totalPrice)
-            );
+            sortCondition = desc(buildsTable.totalPrice)
             break;
         case 'rating_desc':
-            sortConditions.push(
-                desc(sql<number>`COALESCE(AVG(${ratingBuildsTable.value}::float),0)`)
-            );
+            sortCondition = desc(sql<number>`COALESCE(AVG(${ratingBuildsTable.value}::float),0)`)
             break;
         case 'oldest':
-            sortConditions.push(
-                asc(buildsTable.createdAt)
-            );
+            sortCondition = asc(buildsTable.createdAt)
             break;
         case 'newest':
-            sortConditions.push(
-                desc(buildsTable.createdAt)
-            );
+            sortCondition = desc(buildsTable.createdAt)
             break;
         default:
-            sortConditions.push(
-                desc(buildsTable.createdAt)
-            );
+            sortCondition = desc(buildsTable.createdAt)
             break;
         }
 
@@ -175,7 +163,7 @@ export async function getApprovedBuilds(db: Database, limit?: number, sort?: str
             )
         )
         .orderBy(
-            ...sortConditions
+            sortCondition
         )
         .limit(limit || 100); // 100 placeholder
 

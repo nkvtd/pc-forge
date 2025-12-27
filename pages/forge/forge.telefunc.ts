@@ -61,12 +61,13 @@ export async function onAddComponentToBuild({ buildId, componentId }: { buildId:
     return { success: true };
 }
 
-export async function onGetCompatibleComponents({ buildId, componentType }: { buildId: number, componentType: string }) {
+export async function onGetCompatibleComponents({ buildId, componentType, limit, sort }
+                                                : { db: Database, buildId: number, componentType: string, limit?: number, sort?: string }) {
     const { c, userId } = requireUser()
 
     if(!Number.isInteger(buildId) || buildId <= 0) throw Abort();
 
-    const compatibleComponents = await drizzleQueries.getCompatibleComponents(c.db, buildId, componentType);
+    const compatibleComponents = await drizzleQueries.getCompatibleComponents(c.db, buildId, componentType, limit, sort);
 
     if(!compatibleComponents) throw Abort();
 
