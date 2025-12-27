@@ -69,7 +69,6 @@ export default function UserDashboard() {
                                                                                         variant="h6">{error}</Typography><Button
         href="/auth/login" variant="contained">Login</Button></Container>;
 
-
     // @ts-ignore
     return (
         <Container maxWidth="xl" sx={{mt: 4, mb: 4, color: 'white'}}>
