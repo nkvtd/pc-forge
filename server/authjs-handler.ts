@@ -66,9 +66,8 @@ const authjsConfig = {
       async jwt({ token, user }) {
           if (user) {
               token.sub = user.id;
-              token.username = user.name;
-
               const customUser = user as any;
+              token.username = customUser.username;
               token.email = customUser.email;
               token.isAdmin = customUser.isAdmin;
           }
@@ -77,7 +76,7 @@ const authjsConfig = {
       async session({ session, token }) {
           if (session.user) {
               session.user.id = token.sub!;
-              session.user.name = token.name as string;
+              session.user.name = token.username as string;
 
               const customToken = token as any;
               session.user.email = customToken.email;
