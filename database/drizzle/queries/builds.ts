@@ -76,15 +76,27 @@ export async function getFavoriteBuilds(db: Database, userId: number) {
             user_id: buildsTable.userId,
             name: buildsTable.name,
             created_at: buildsTable.createdAt,
-            total_price: buildsTable.totalPrice
+            total_price: buildsTable.totalPrice,
+            avgRating: sql<number>`COALESCE(AVG(${ratingBuildsTable.value}::float),0)`
         })
         .from(buildsTable)
         .innerJoin(
             favoriteBuildsTable,
             eq(buildsTable.id, favoriteBuildsTable.buildId)
         )
+        .leftJoin(
+            ratingBuildsTable,
+            eq(buildsTable.id, ratingBuildsTable.buildId)
+        )
         .where(
             eq(favoriteBuildsTable.userId, userId)
+        )
+        .groupBy(
+            buildsTable.id,
+            buildsTable.userId,
+            buildsTable.name,
+            buildsTable.createdAt,
+            buildsTable.totalPrice
         )
         .orderBy(
             desc(sql<number>`COALESCE(AVG(${ratingBuildsTable.value}::float),0)`)
