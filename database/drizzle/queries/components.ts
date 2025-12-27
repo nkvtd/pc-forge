@@ -27,17 +27,17 @@ export async function getAllComponents(db: Database, limit?: number, componentTy
     switch(sort) {
         case 'price_asc':
             sortConditions.push(
-                asc(buildsTable.totalPrice)
+                asc(componentsTable.price)
             );
             break;
         case 'price_desc':
             sortConditions.push(
-                desc(buildsTable.totalPrice)
+                desc(componentsTable.price)
             );
             break;
         default:
             sortConditions.push(
-                desc(buildsTable.createdAt)
+                desc(componentsTable.price)
             );
             break;
     }

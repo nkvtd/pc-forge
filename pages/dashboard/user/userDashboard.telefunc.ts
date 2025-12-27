@@ -13,7 +13,10 @@ export async function getUserInfoAndData() {
     const favoriteBuilds = await drizzleQueries.getFavoriteBuilds(c.db, userId);
 
     return {
-        user,
+        user: {
+            ...user,
+            id: userId,
+        },
         userBuilds,
         favoriteBuilds
     };

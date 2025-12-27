@@ -18,8 +18,6 @@ export async function onGetAllComponents({ componentType, limit, sort, q }
     return components;
 }
 
-
-
 export async function onSuggestComponent({ link, description, componentType }
                                                : { link: string; description: string; componentType: string }) {
     const { c, userId } = requireUser()
