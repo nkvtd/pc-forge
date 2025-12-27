@@ -1,1 +1,4 @@
 *.sh text eol=lf
+*.sh text eol=lf
+*.sql text eol=lf
+database/migrations/** text eol=lf
