@@ -63,8 +63,8 @@ export async function onGetCompatibleComponents({ buildId, componentType, limit,
     return compatibleComponents;
 }
 
-export async function onGetBuildState({ db, buildId}
-                                      :{ db: Database, buildId: number }) {
+export async function onGetBuildState({ buildId }
+                                      :{ buildId: number }) {
     const { c, userId } = requireUser()
 
     if(!Number.isInteger(buildId) || buildId <= 0) throw Abort();
@@ -76,8 +76,8 @@ export async function onGetBuildState({ db, buildId}
     return buildState;
 }
 
-export async function saveBuildState({ db, buildId, name, description }
-                                     :{ db: Database, buildId: number, name: string, description: string }) {
+export async function saveBuildState({ buildId, name, description }
+                                     :{ buildId: number, name: string, description: string }) {
     const { c, userId } = requireUser()
 
     if(!Number.isInteger(buildId) || buildId <= 0) throw Abort();
