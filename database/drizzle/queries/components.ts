@@ -54,6 +54,7 @@ export async function getAllComponents(db: Database, limit?: number, componentTy
             name: componentsTable.name,
             brand: componentsTable.brand,
             price: componentsTable.price,
+            imgUrl: componentsTable.imgUrl
         })
         .from(componentsTable)
         .where(
