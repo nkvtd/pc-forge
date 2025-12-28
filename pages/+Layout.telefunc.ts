@@ -2,6 +2,7 @@ import * as drizzleQueries from "../database/drizzle/queries";
 import {ctx, getAuthState, parseSessionUserId, requireUser} from "../server/telefunc/ctx";
 import {Abort} from "telefunc";
 import type {Database} from "../database/drizzle/db";
+import {addNewBuild} from "../database/drizzle/queries";
 
 export async function onGetAuthState() {
     const context = getAuthState();
@@ -111,4 +112,15 @@ export async function onCloneBuild({ buildId }
     if (!newBuild) throw Abort();
 
     return newBuild;
+}
+
+export async function onAddNewBuild({ name, description }
+                                          : { name: string; description: string }) {
+    const { c, userId } = requireUser()
+
+    const newBuildId = await drizzleQueries.addNewBuild(c.db, userId, name, description);
+
+    if (!newBuildId) throw Abort();
+
+    return { buildId: newBuildId };
 }

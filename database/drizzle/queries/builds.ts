@@ -494,45 +494,22 @@ export async function deleteBuild(db: Database, userId: number, buildId: number)
     return result?.id ?? null;
 }
 
-export async function addNewBuild(db: Database, userId: number, name: string, description: string, componentIds: number[]) {
-    return db.transaction(async (tx) => {
-        const components = await tx
-            .select({
-                price:  componentsTable.price
-            })
-            .from(componentsTable)
-            .where(
-                inArray(componentsTable.id, componentIds)
-            );
+export async function addNewBuild(db: Database, userId: number, name: string, description: string) {
+    const [newBuild] = await db
+        .insert(buildsTable)
+        .values({
+            userId: userId,
+            name: name,
+            createdAt: new Date().toISOString().split('T')[0],
+            description: description,
+            totalPrice: Number(0).toFixed(2),
+            isApproved: false
+        })
+        .returning({
+            id: buildsTable.id
+        });
 
-        const totalPrice = components.reduce((sum, c) => sum + Number(c.price), 0);
-
-        const [newBuild] = await tx
-            .insert(buildsTable)
-            .values({
-                userId: userId,
-                name: name,
-                createdAt: new Date().toISOString().split('T')[0],
-                description: description,
-                totalPrice: totalPrice.toFixed(2),
-                isApproved: false
-            })
-            .returning({
-                id: buildsTable.id
-            });
-
-        if(components.length) {
-            await tx.insert(buildComponentsTable)
-                .values(
-                    componentIds.map(componentId => ({
-                        buildId: newBuild.id,
-                        componentId: componentId
-                    }))
-                );
-        }
-
-        return newBuild?.id ?? null;
-    });
+    return newBuild?.id ?? null;
 }
 
 export async function editBuild(db: Database, userId: number, buildId: number, name: string, description: string, componentIds: number[]) {
