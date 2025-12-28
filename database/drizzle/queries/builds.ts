@@ -510,8 +510,12 @@ export async function saveBuildState(db: Database, userId: number, buildId: numb
             name,
             description
         })
-        .where(eq(buildsTable.id, buildId))
-        .returning({ id: buildsTable.id });
+        .where(
+            eq(buildsTable.id, buildId)
+        )
+        .returning({
+            id: buildsTable.id
+        });
 
     return updated?.id ?? null;
 }

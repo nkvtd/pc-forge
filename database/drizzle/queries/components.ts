@@ -277,7 +277,7 @@ export async function getCompatibleComponents(db: Database, buildId: number, com
 
     switch (componentType) {
         case 'cpu':
-            compatibleComponents = await getCompatibleCPUs(db, existing, limit, sortCondition);
+            compatibleComponents = await getCompatibleCPUs(db, existing, existingTDP, limit, sortCondition);
             break;
         case 'motherboard':
             compatibleComponents = await getCompatibleMotherboards(db, existing, pciExpressSlotsUsed, limit, sortCondition);
@@ -286,7 +286,7 @@ export async function getCompatibleComponents(db: Database, buildId: number, com
             compatibleComponents = await getCompatibleCoolers(db, existing, limit, sortCondition);
             break;
         case 'gpu':
-            compatibleComponents = await getCompatibleGPUs(db, existing, pciExpressSlotsUsed, limit, sortCondition);
+            compatibleComponents = await getCompatibleGPUs(db, existing, existingTDP, pciExpressSlotsUsed, limit, sortCondition);
             break;
         case 'memory':
             compatibleComponents = await getCompatibleMemory(db, existing, limit, sortCondition);
@@ -316,7 +316,7 @@ export async function getCompatibleComponents(db: Database, buildId: number, com
 
 
 // Helper functions for checking component-specific compatibility
-async function getCompatibleCPUs(db: Database, existing: any, limit?: number, sortCondition?: any) {
+async function getCompatibleCPUs(db: Database, existing: any, existingTDP?: number, limit?: number, sortCondition?: any) {
     const conditions = [eq(componentsTable.type, 'cpu')];
 
     if (existing.motherboard) {
@@ -361,12 +361,30 @@ async function getCompatibleCPUs(db: Database, existing: any, limit?: number, so
         )
         .limit(limit || 100);
 
+    let filteredCPUs = cpus;
+
     if (existing.cooler?.details?.cpuSockets) {
         const coolerSockets = existing.cooler.details.cpuSockets.map((s: any) => s.socket);
-        return cpus.filter(cpu => coolerSockets.includes(cpu.socket));
+        filteredCPUs = filteredCPUs.filter(cpu => coolerSockets.includes(cpu.socket));
     }
 
-    return cpus;
+    if(existing.psu?.details?.wattage && existingTDP) {
+        const psuWattage = Number(existing.psu.details.wattage) || 0;
+
+        if (psuWattage > 0) {
+            const budget = psuWattage / 1.2;
+
+            const currentCpuTdp = Number(existing.cpu?.details?.tdp) || 0;
+            const baseWithoutCpu = existingTDP - currentCpuTdp;
+
+            filteredCPUs = filteredCPUs.filter(cpu => {
+                const cpuTdp = Number(cpu.tdp) || 0;
+                return (baseWithoutCpu + cpuTdp) <= budget;
+            });
+        }
+    }
+
+    return filteredCPUs;
 }
 
 async function getCompatibleMotherboards(db: Database, existing: any, pciExpressSlotsUsed: number, limit?: number, sortCondition?: any) {
@@ -516,7 +534,7 @@ async function getCompatibleCoolers(db: Database, existing: any, limit?: number,
     return coolers;
 }
 
-async function getCompatibleGPUs(db: Database, existing: any, pciExpressSlotsUsed: number, limit?: number, sortCondition?: any) {
+async function getCompatibleGPUs(db: Database, existing: any, existingTDP: number, pciExpressSlotsUsed: number, limit?: number, sortCondition?: any) {
     const conditions = [eq(componentsTable.type, 'gpu')];
 
     if (existing.case) {
@@ -555,12 +573,30 @@ async function getCompatibleGPUs(db: Database, existing: any, pciExpressSlotsUse
         )
         .limit(limit || 100);
 
+    let filteredGPUs = gpus;
+
     if (existing.motherboard) {
         const availableSlots = Number(existing.motherboard.details.pciExpressSlots);
-        return gpus.filter(() => (pciExpressSlotsUsed + 1) <= availableSlots);
+        filteredGPUs = gpus.filter(() => (pciExpressSlotsUsed + 1) <= availableSlots);
     }
 
-    return gpus;
+    if(existing.psu?.details?.wattage && existingTDP) {
+        const psuWattage = Number(existing.psu.details.wattage) || 0;
+
+        if (psuWattage > 0) {
+            const budget = psuWattage / 1.2;
+
+            const currentGpuTdp = Number(existing.cpu?.details?.tdp) || 0;
+            const baseWithoutGpu = existingTDP - currentGpuTdp;
+
+            filteredGPUs = filteredGPUs.filter(cpu => {
+                const gpuTdp = Number(cpu.tdp) || 0;
+                return (baseWithoutGpu + gpuTdp) <= budget;
+            });
+        }
+    }
+
+    return filteredGPUs;
 }
 
 async function getCompatibleMemory(db: Database, existing: any, limit?: number, sortCondition?: any) {
