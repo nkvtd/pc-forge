@@ -109,15 +109,16 @@ export default function ComponentDetailsDialog({open, component, onClose}: any) 
                         <Grid item xs={12} md={4} sx={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
                             <Box
                                 component="img"
-                                src={`https://placehold.co/400x400?text=${encodeURIComponent(displayData.name)}`}
+                                // src={`https://placehold.co/400x400?text=${encodeURIComponent(displayData.name)}`}
+                                src={displayData.imgUrl}
                                 alt={displayData.name}
                                 sx={{
                                     width: '100%',
                                     maxHeight: 300,
                                     objectFit: 'contain',
                                     mb: 2,
-                                    border: '1px solid #eee',
-                                    borderRadius: 2,
+                                    // border: '1px solid #eee',
+                                    // borderRadius: 2,
                                     p: 2
                                 }}
                             />
