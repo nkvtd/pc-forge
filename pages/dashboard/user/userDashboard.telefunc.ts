@@ -47,16 +47,3 @@ export async function onEditBuild({ buildId }
 
     return buildDetails;
 }
-
-export async function onSaveEditBuild({ buildId, name, description, componentIds }
-                                      : { buildId: number; name: string; description: string; componentIds: number[] }) {
-    const { c, userId } = requireUser()
-
-    if (!Number.isInteger(buildId) || buildId <= 0) throw Abort();
-
-    const result = await drizzleQueries.editBuild(c.db, userId, buildId, name, description, componentIds);
-
-    if(!result) throw Abort();
-
-    return { success: true };
-}

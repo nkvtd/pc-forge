@@ -4,22 +4,24 @@ import {Abort} from "telefunc";
 import type {Database} from "../../database/drizzle/db";
 import {removeComponentFromBuild} from "../../database/drizzle/queries";
 
-export async function onSaveNewBuild({ name, description, componentIds }
-                                       : { name: string; description: string; componentIds: number[] }) {
-    const { c, userId } = requireUser()
-
-    const newBuildId = await drizzleQueries.addNewBuild(c.db, userId, name, description, componentIds);
-
-    if(!newBuildId) throw Abort();
-
-    return { success: true };
-}
-
 export async function onRemoveComponentFromBuild({ buildId, componentId }
                                                  : { buildId: number, componentId: number }) {
     const { c, userId } = requireUser()
 
-    const result = await drizzleQueries.removeComponentFromBuild(c.db, buildId, componentId);
+    const result = await drizzleQueries.removeComponentFromBuild(c.db, userId, buildId, componentId);
+
+    if(!result) throw Abort();
+
+    return { success: true };
+}
+
+export async function onAddComponentToBuild({ buildId, componentId }: { buildId: number, componentId: number }) {
+    const { c, userId } = requireUser()
+
+    if(!Number.isInteger(buildId) || buildId <= 0) throw Abort();
+    if(!Number.isInteger(componentId) || componentId <= 0) throw Abort();
+
+    const result = await drizzleQueries.addComponentToBuild(c.db, userId, buildId, componentId);
 
     if(!result) throw Abort();
 
@@ -48,21 +50,8 @@ export async function onGetBuildComponents({ buildId }
     return buildComponents;
 }
 
-export async function onAddComponentToBuild({ buildId, componentId }: { buildId: number, componentId: number }) {
-    const { c, userId } = requireUser()
-
-    if(!Number.isInteger(buildId) || buildId <= 0) throw Abort();
-    if(!Number.isInteger(componentId) || componentId <= 0) throw Abort();
-
-    const result = await drizzleQueries.addComponentToBuild(c.db, buildId, componentId);
-
-    if(!result) throw Abort();
-
-    return { success: true };
-}
-
 export async function onGetCompatibleComponents({ buildId, componentType, limit, sort }
-                                                : { db: Database, buildId: number, componentType: string, limit?: number, sort?: string }) {
+                                                : { buildId: number, componentType: string, limit?: number, sort?: string }) {
     const { c, userId } = requireUser()
 
     if(!Number.isInteger(buildId) || buildId <= 0) throw Abort();
@@ -72,4 +61,30 @@ export async function onGetCompatibleComponents({ buildId, componentType, limit,
     if(!compatibleComponents) throw Abort();
 
     return compatibleComponents;
+}
+
+export async function onGetBuildState({ db, buildId}
+                                      :{ db: Database, buildId: number }) {
+    const { c, userId } = requireUser()
+
+    if(!Number.isInteger(buildId) || buildId <= 0) throw Abort();
+
+    const buildState = await drizzleQueries.getBuildState(c.db, userId, buildId);
+
+    if(!buildState) throw Abort();
+
+    return buildState;
+}
+
+export async function saveBuildState({ db, buildId, name, description }
+                                     :{ db: Database, buildId: number, name: string, description: string }) {
+    const { c, userId } = requireUser()
+
+    if(!Number.isInteger(buildId) || buildId <= 0) throw Abort();
+
+    const result = await drizzleQueries.saveBuildState(c.db, userId, buildId, name, description);
+
+    if(!result) throw Abort();
+
+    return { success: true };
 }

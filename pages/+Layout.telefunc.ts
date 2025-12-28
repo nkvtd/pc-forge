@@ -107,11 +107,11 @@ export async function onCloneBuild({ buildId }
 
     if (!Number.isInteger(buildId) || buildId <= 0) throw Abort();
 
-    const newBuild = await drizzleQueries.cloneBuild(c.db, userId, buildId);
+    const clonedBuildId = await drizzleQueries.cloneBuild(c.db, userId, buildId);
 
-    if (!newBuild) throw Abort();
+    if (!clonedBuildId) throw Abort();
 
-    return newBuild;
+    return clonedBuildId;
 }
 
 export async function onAddNewBuild({ name, description }
@@ -122,5 +122,6 @@ export async function onAddNewBuild({ name, description }
 
     if (!newBuildId) throw Abort();
 
-    return { buildId: newBuildId };
+    return newBuildId;
 }
+

@@ -9,6 +9,7 @@ import {
 } from "../schema";
 import {eq, desc, and, sql, ilike, asc} from "drizzle-orm";
 import {inArray} from "drizzle-orm/sql/expressions/conditions";
+import {addComponentToBuild} from "./components";
 
 export async function getPendingBuilds(db: Database) {
     const pendingBuilds = await db
@@ -391,13 +392,7 @@ export async function setBuildReview(db: Database, userId: number,  buildId: num
 export async function cloneBuild(db: Database, userId: number, buildId: number) {
     return db.transaction(async (tx) => {
         const [buildToClone] = await tx
-            .select({
-                id: buildsTable.id,
-                userId: buildsTable.userId,
-                name: buildsTable.name,
-                description: buildsTable.description,
-                totalPrice: buildsTable.totalPrice,
-            })
+            .select()
             .from(buildsTable)
             .where(
                 eq(buildsTable.id, buildId)
@@ -420,61 +415,23 @@ export async function cloneBuild(db: Database, userId: number, buildId: number) 
                 id: buildsTable.id
             });
 
-        const components = await tx
-            .select()
-            .from(buildComponentsTable)
-            .where(
-                eq(buildComponentsTable.buildId, buildId)
-            );
+        if(!newBuild) return null;
 
-        if(components.length) {
-            await tx
-                .insert(buildComponentsTable)
-                .values(
-                    components.map(component => ({
-                        buildId: newBuild.id,
-                        componentId: component.componentId
-                    }))
-                );
+        const existing = await tx
+            .select({ componentId: buildComponentsTable.componentId })
+            .from(buildComponentsTable)
+            .where(eq(buildComponentsTable.buildId, buildId));
+
+        if (existing.length > 0) {
+            await tx.insert(buildComponentsTable).values(
+                existing.map((r) => ({
+                    buildId: newBuild.id,
+                    componentId: r.componentId,
+                })),
+            );
         }
 
-        const [clonedBuild] = await tx
-            .select({
-                id: buildsTable.id,
-                userId: buildsTable.userId,
-                name: buildsTable.name,
-                createdAt: buildsTable.createdAt,
-                description: buildsTable.description,
-                totalPrice: buildsTable.totalPrice
-            })
-            .from(buildsTable)
-            .innerJoin(
-                usersTable,
-                eq(buildsTable.userId, usersTable.id)
-            )
-            .where(
-                eq(buildsTable.id, newBuild.id)
-            )
-            .limit(1);
-
-        const clonedComponents = await tx
-            .select({
-                componentId: buildComponentsTable.componentId,
-                component: componentsTable
-            })
-            .from(buildComponentsTable)
-            .innerJoin(
-                componentsTable,
-                eq(buildComponentsTable.componentId, componentsTable.id)
-            )
-            .where(
-                eq(buildComponentsTable.buildId, newBuild.id)
-            );
-
-        return {
-            ...clonedBuild,
-            components: clonedComponents.map(c => c.component)
-        };
+        return newBuild.id;
     });
 }
 
@@ -512,68 +469,84 @@ export async function addNewBuild(db: Database, userId: number, name: string, de
     return newBuild?.id ?? null;
 }
 
-export async function editBuild(db: Database, userId: number, buildId: number, name: string, description: string, componentIds: number[]) {
-    return db.transaction(async (tx) => {
-        const [build] = await tx
-            .select({
-                id: buildsTable.id,
-                userId: buildsTable.userId,
-                isApproved: buildsTable.isApproved
-            })
-            .from(buildsTable)
-            .where(
-                and(
-                    eq(buildsTable.id, buildId),
-                    eq(buildsTable.userId, userId)
-                )
+export async function editBuild(db: Database, userId: number, buildId: number) {
+    const [buildToEdit] = await db
+        .select()
+        .from(buildsTable)
+        .where(
+            and(
+                eq(buildsTable.id, buildId),
+                eq(buildsTable.userId, userId)
             )
-            .limit(1);
+        )
+        .limit(1);
 
-        if (!build) return null;
-        if (build.isApproved) return null;
+    if (!buildToEdit || buildToEdit.isApproved) return null;
 
-        const components = await tx
-            .select({
-                id: componentsTable.id,
-                price: componentsTable.price
+
+    return buildToEdit?.id ?? null;
+}
+
+export async function saveBuildState(db: Database, userId: number, buildId: number, name: string, description: string ) {
+    const [build] = await db
+        .select({
+            id: buildsTable.id,
+            isApproved: buildsTable.isApproved
+        })
+        .from(buildsTable)
+        .where(
+            and(
+                eq(buildsTable.id, buildId),
+                eq(buildsTable.userId, userId)
+            )
+        )
+        .limit(1);
+
+    if (!build || build.isApproved) return null;
+
+    const [updated] = await db
+        .update(buildsTable)
+        .set({
+            name,
+            description
+        })
+        .where(eq(buildsTable.id, buildId))
+        .returning({ id: buildsTable.id });
+
+    return updated?.id ?? null;
+}
+
+export async function getBuildState(db: Database, userId: number, buildId: number) {
+    const [build] = await db
+        .select({
+            id: buildsTable.id,
+            userId: buildsTable.userId,
+            isApproved: buildsTable.isApproved,
+            name: buildsTable.name,
+            description: buildsTable.description,
+            totalPrice: buildsTable.totalPrice,
+        })
+        .from(buildsTable)
+        .where(
+            and(
+                eq(buildsTable.id, buildId),
+                eq(buildsTable.userId, userId)
+            )
+        )
+        .limit(1);
+
+    if (!build || build.isApproved) return null;
+
+    const components = await db
+        .select({ componentId: buildComponentsTable.componentId
             })
-            .from(componentsTable)
-            .where(
-                inArray(componentsTable.id, componentIds)
-            );
+        .from(buildComponentsTable)
+        .where(
+            eq(buildComponentsTable.buildId, buildId)
+        );
 
-        const totalPrice = components.reduce((sum, c) => sum + Number(c.price), 0);
-
-        await tx
-            .update(buildsTable)
-            .set({
-                name: name,
-                description: description,
-                totalPrice: totalPrice.toFixed(2),
-            })
-            .where(
-                and(
-                    eq(buildsTable.id, buildId),
-                    eq(buildsTable.userId, userId)
-                )
-            );
-
-        await tx
-            .delete(buildComponentsTable)
-            .where(
-                eq(buildComponentsTable.buildId, buildId)
-            );
-
-        if(components.length) {
-            await tx.insert(buildComponentsTable)
-                .values(
-                    componentIds.map(componentId => ({
-                        buildId: buildId,
-                        componentId: componentId
-                    }))
-                );
-        }
-
-        return build.id;
-    });
+    return {
+        build,
+        componentIds: components.map(c => c.componentId)
+    };
 }
