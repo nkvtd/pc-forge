@@ -1,37 +1,80 @@
-import React from 'react';
-import { Card, CardMedia, CardContent, Typography, Box, Chip } from '@mui/material';
+import React, {useEffect, useState} from 'react';
+import {Card, CardContent, CardMedia, Typography, Box, Chip} from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
-// import PersonIcon from '@mui/icons-material/Person';
+import {onGetBuildDetails} from "../pages/+Layout.telefunc";
 
-export default function BuildCard({ build, onClick }: { build: any, onClick: () => void }) {
-    const formattedPrice = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' }).format(build.total_price || 0);
+export default function BuildCard({build, onClick}: { build: any, onClick?: () => void }) {
+    const [caseImage, setCaseImage] = useState<string>("https://placehold.co/600x400?text=PC+Build");
+    const [imageLoading, setImageLoading] = useState(true);
+
+    const formattedPrice = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'EUR'
+    }).format(build.total_price || 0);
+
+    useEffect(() => {
+        onGetBuildDetails({buildId: build.id})
+            .then(details => {
+                const caseComponent = details.components.find((c: any) => c.type === 'case');
+                setCaseImage(caseComponent?.imgUrl || caseComponent?.imgUrl || "https://placehold.co/600x400?text=PC+Build");
+            })
+            .catch(() => {
+            })
+            .finally(() => setImageLoading(false));
+    }, [build.id]);
 
     return (
         <Card
-            sx={{ height: '100%', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'all 0.2s', '&:hover': { transform: 'translateY(-4px)', boxShadow: 6 } }}
             onClick={onClick}
+            sx={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                cursor: onClick ? 'pointer' : 'default',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                '&:hover': onClick ? {
+                    transform: 'translateY(-4px)',
+                    boxShadow: 6
+                } : {},
+                position: 'relative'
+            }}
         >
-            <CardMedia
-                component="img"
-                height="160"
-                image={build.img_url || "https://placehold.co/600x400?text=PC+Build"}
-                alt={build.name}
-            />
-            <CardContent sx={{ flexGrow: 1, pb: 1 }}>
-                <Typography gutterBottom variant="h6" noWrap title={build.name}>
-                    {build.name}
-                </Typography>
+            <Box sx={{position: 'relative', paddingTop: '75%'}}>
+                <CardMedia
+                    component="img"
+                    image={caseImage || '/placeholder-pc.png'}
+                    alt={build.name}
+                    sx={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        p: 2,
+                        bgcolor: '#f5f5f5'
+                    }}
+                />
+            </Box>
 
-                {/*Ne se renderira user-ot*/}
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, color: 'text.secondary' }}>
-                    {/*    <PersonIcon sx={{ fontSize: 16, mr: 0.5 }} />*/}
-                    {/*    <Typography variant="caption">{build.user || 'Unknown'}</Typography>*/}
+            <CardContent sx={{flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
+                <Box sx={{mb: 2}}>
+                    <Typography variant="h6" component="div" fontWeight="bold" wrap title={build.name}>
+                        {build.name}
+                    </Typography>
                 </Box>
 
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}>
-                    <Chip label={formattedPrice} size="small" color="primary" variant="outlined" />
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <StarIcon fontSize="small" sx={{ color: '#faaf00', mr: 0.5 }} />
+                <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto'}}>
+                    <Chip
+                        label={formattedPrice}
+                        color="primary"
+                        variant="outlined"
+                        size="small"
+                        sx={{fontWeight: 'bold'}}
+                    />
+                    <Box sx={{display: 'flex', alignItems: 'center'}}>
+                        <StarIcon sx={{color: '#faaf00', fontSize: 20, mr: 0.5}}/>
                         <Typography variant="body2" fontWeight="bold">
                             {Number(build.avgRating || 5).toFixed(1)}
                         </Typography>

@@ -246,6 +246,8 @@ export async function getCompatibleComponents(db: Database, buildId: number, com
 
     if(!existingComponents) return null;
 
+
+
     const existing = {
         cpu: existingComponents.find(c => c.type === 'cpu'),
         motherboard: existingComponents.find(c => c.type === 'motherboard'),

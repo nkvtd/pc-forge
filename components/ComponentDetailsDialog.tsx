@@ -32,16 +32,31 @@ export default function ComponentDetailsDialog({open, component, onClose}: any) 
 
     const renderValue = (key: string, val: any) => {
         if (Array.isArray(val)) {
-            if (val.length > 0 && typeof val[0] === 'object') {
-                return val.map((v: any) => v.formFactor || v.socket || JSON.stringify(v)).join(', ');
+            if (val.length === 0) return 'None';
+
+            if (typeof val[0] === 'string') {
+                return val.join(', ');
             }
+
+            if (typeof val[0] === 'object') {
+                const parts = val
+                    .map((v: any) =>
+                        v.socket ||
+                        v.formFactor ||
+                        v.name ||
+                        v.type ||
+                        Object.values(v)[0]
+                    )
+                    .filter(Boolean);
+                return parts.length > 0 ? parts.join(', ') : 'None';
+            }
+
             return val.join(', ');
         }
 
         const strVal = String(val);
         const lowerKey = key.toLowerCase();
 
-        // Dodava merni edinici vo zavisnost koja komponenta e
         if (lowerKey.includes('capacity') || lowerKey.includes('vram') || lowerKey === 'memory') {
             return `${strVal} GB`;
         }
@@ -57,6 +72,7 @@ export default function ComponentDetailsDialog({open, component, onClose}: any) 
         if (lowerKey.includes('clock')) {
             return `${strVal} GHz`;
         }
+
         if (lowerKey.includes('speed')) {
             return `${strVal} MHz`;
         }

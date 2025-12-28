@@ -48,7 +48,7 @@ export default function AdminDashboard() {
 
     const openSuggestionReview = (id: number, action: 'approved' | 'rejected') => {
         setSuggestionDialog({ open: true, id, action });
-        setAdminComment(action === 'approved' ? "Approved by admin." : "Rejected: ");
+        setAdminComment(action === 'approved' ? "" : "");
     };
 
     const submitSuggestionReview = async () => {
@@ -122,7 +122,7 @@ export default function AdminDashboard() {
                                                             {sug.description || sug.link}
                                                         </a>
                                                     </TableCell>
-                                                    <TableCell>{sug.componentType}</TableCell>
+                                                    <TableCell>{sug.componentType.toUpperCase()}</TableCell>
                                                     <TableCell>{sug.userId}</TableCell>
                                                     <TableCell align="right">
                                                         <IconButton size="small" color="success" onClick={() => openSuggestionReview(sug.id, 'approved')}>
@@ -206,7 +206,7 @@ export default function AdminDashboard() {
             </Grid>
 
             <Dialog open={suggestionDialog.open} onClose={() => setSuggestionDialog({...suggestionDialog, open: false})}>
-                <DialogTitle>Review Suggestion</DialogTitle>
+                <DialogTitle>Review Component Suggestion</DialogTitle>
                 <DialogContent>
                     <Typography gutterBottom>Status: <b>{suggestionDialog.action.toUpperCase()}</b></Typography>
                     <TextField
