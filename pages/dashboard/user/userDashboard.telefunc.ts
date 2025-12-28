@@ -41,9 +41,9 @@ export async function onEditBuild({ buildId }
 
     if(!Number.isInteger(buildId) || buildId <= 0) throw Abort();
 
-    const buildDetails = await drizzleQueries.getBuildDetails(c.db, buildId, userId);
+    const buildToEditId = await drizzleQueries.editBuild(c.db, userId, buildId);
 
-    if(!buildDetails) throw Abort();
+    if(!buildToEditId) throw Abort();
 
-    return buildDetails;
+    return buildToEditId;
 }
