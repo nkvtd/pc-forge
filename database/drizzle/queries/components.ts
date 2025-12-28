@@ -49,13 +49,7 @@ export async function getAllComponents(db: Database, limit?: number, componentTy
     }
 
     const components = await db
-        .select({
-            id: componentsTable.id,
-            name: componentsTable.name,
-            brand: componentsTable.brand,
-            price: componentsTable.price,
-            imgUrl: componentsTable.imgUrl
-        })
+        .select()
         .from(componentsTable)
         .where(
             queryConditions.length > 0 ?
