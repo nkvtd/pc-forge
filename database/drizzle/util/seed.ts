@@ -47,56 +47,56 @@ INSERT INTO users (username, password, email) VALUES
 INSERT INTO admins (user_id) VALUES (4);
 
 INSERT INTO components (name, brand, price, type, img_url) VALUES
-('Ryzen 5 5600X', 'AMD', 199.99, 'cpu', NULL),          
-('RTX 3060', 'NVIDIA', 329.99, 'gpu', NULL),           
-('16GB DDR4 Kit', 'Corsair', 79.99, 'memory', NULL),       
-('650W PSU', 'EVGA', 89.99, 'power_supply', NULL),               
-('Mid Tower Case', 'NZXT', 119.99, 'case', NULL),      
-('Air Cooler', 'Noctua', 69.99, 'cooler', NULL),           
-('B550 Motherboard', 'ASUS', 149.99, 'motherboard', NULL),      
-('1TB NVMe SSD', 'Samsung', 129.99, 'storage', NULL),       
+('Ryzen 5 5600X', 'AMD', 199.99, 'cpu', 'https://static.hardwaredb.net/badges/ryzen-5-5600.png'),          
+('RTX 3060', 'NVIDIA', 329.99, 'gpu', 'https://static.hardwaredb.net/badges/geforce-rtx-3060.png'),           
+('16GB DDR4 Kit', 'Corsair', 79.99, 'memory', 'https://cwsmgmt.corsair.com/press/CORSAIRLogo2020_stack_W.png'),       
+('650W PSU', 'EVGA', 89.99, 'power_supply', 'https://cdn.brandfetch.io/iddPf9bbl3/w/400/h/400/theme/dark/icon.jpeg?c=1dxbfHSJFAPEGdCLU4o5B'),               
+('Mid Tower Case', 'NZXT', 119.99, 'case', 'https://nzxt.com/cdn/shop/files/h5-elite-hero-black.png?v=1744789660&width=2000'),      
+('Air Cooler', 'Noctua', 69.99, 'cooler', 'https://cdn.brandfetch.io/idSeoCDyH9/w/400/h/400/theme/dark/icon.png?c=1dxbfHSJFAPEGdCLU4o5B'),           
+('B550 Motherboard', 'ASUS', 149.99, 'motherboard', 'https://cdn.brandfetch.io/idGnlhbTXH/w/400/h/400/theme/dark/icon.jpeg?c=1dxbfHSJFAPEGdCLU4o5B'),      
+('1TB NVMe SSD', 'Samsung', 129.99, 'storage', 'https://cdn.brandfetch.io/iduaw_nOnR/w/400/h/400/theme/dark/icon.jpeg?c=1dxbfHSJFAPEGdCLU4o5B'),       
 ('Sound Card', 'Creative', 59.99, 'sound_card', NULL),        
-('Network Card', 'Intel', 39.99, 'network_card',NULL),         
-('Network Adapter', 'TP-Link', 29.99, 'network_adapter', NULL),     
-('Optical Drive', 'LG', 19.99, 'optical_drive', NULL),           
-('Memory Card', 'SanDisk', 15.99, 'memory_card', NULL),        
-('Cables Pack', 'Corsair', 9.99, 'cables', NULL),
-('Ryzen 5 7600', 'AMD', 229.00, 'cpu', 'https://placehold.co/400x400?text=GPU'),
-('Ryzen 7 7800X3D', 'AMD', 399.00, 'cpu', 'https://placehold.co/400x400?text=GPU'),
-('Ryzen 9 7950X', 'AMD', 599.00, 'cpu', 'https://placehold.co/400x400?text=GPU'),
-('Core i3-13100F', 'Intel', 119.99, 'cpu', 'https://placehold.co/400x400?text=GPU'),
-('Core i5-13600K', 'Intel', 319.99, 'cpu', 'https://placehold.co/400x400?text=GPU'),
-('Core i7-14700K', 'Intel', 409.99, 'cpu', 'https://placehold.co/400x400?text=GPU'),
-('Core i9-14900KS', 'Intel', 689.99, 'cpu', 'https://placehold.co/400x400?text=GPU'),
-('Radeon RX 6600', 'PowerColor', 199.99, 'gpu', 'https://placehold.co/400x400?text=GPU'),
-('Radeon RX 7600', 'Sapphire', 269.99, 'gpu', 'https://placehold.co/400x400?text=GPU'),
-('Radeon RX 7800 XT', 'XFX', 499.99, 'gpu', 'https://placehold.co/400x400?text=GPU'),
-('Radeon RX 7900 XTX', 'Sapphire', 999.99, 'gpu', 'https://placehold.co/400x400?text=GPU'),
-('GeForce RTX 3050', 'MSI', 229.99, 'gpu', 'https://placehold.co/400x400?text=GPU'),
-('GeForce RTX 4060', 'Zotac', 299.99, 'gpu', 'https://placehold.co/400x400?text=GPU'),
-('GeForce RTX 4070 Super', 'ASUS', 599.99, 'gpu', 'https://placehold.co/400x400?text=GPU'),
-('GeForce RTX 4080 Super', 'Gigabyte', 999.99, 'gpu', 'https://placehold.co/400x400?text=GPU'),
-('GeForce RTX 4090', 'NVIDIA', 1599.99, 'gpu', 'https://placehold.co/400x400?text=GPU'),
-('B650M DS3H', 'Gigabyte', 149.99, 'motherboard', 'https://placehold.co/400x400?text=GPU'),
-('X670E AORUS Master', 'Gigabyte', 459.99, 'motherboard', 'https://placehold.co/400x400?text=GPU'),
-('B760M Bomber WiFi', 'MSI', 129.99, 'motherboard', 'https://placehold.co/400x400?text=GPU'),
-('Z790 Maximus Hero', 'ASUS', 599.99, 'motherboard', 'https://placehold.co/400x400?text=GPU'),
-('Vengeance LPX 16GB', 'Corsair', 39.99, 'memory', NULL),
-('Ripjaws V 32GB', 'G.Skill', 69.99, 'memory', NULL),
-('Trident Z5 RGB 32GB', 'G.Skill', 114.99, 'memory', NULL),
-('Dominator Platinum 64GB', 'Corsair', 289.99, 'memory', NULL),
-('Crucial P3 1TB', 'Crucial', 64.99, 'storage', NULL),
-('WD Black SN850X 2TB', 'Western Digital', 159.99, 'storage', NULL),
-('Samsung 990 Pro 4TB', 'Samsung', 349.99, 'storage', NULL),
-('H5 Flow', 'NZXT', 94.99, 'case', NULL),
-('4000D Airflow', 'Corsair', 104.99, 'case', NULL),
-('O11 Dynamic Evo', 'Lian Li', 159.99, 'case', NULL),
-('Versa H18', 'Thermaltake', 49.99, 'case', NULL),
-('Smart 500W', 'Thermaltake', 39.99, 'power_supply', NULL),
-('RM750e', 'Corsair', 99.99, 'power_supply', NULL),
-('SuperNOVA 1000 GT', 'EVGA', 169.99, 'power_supply', NULL),
-('Peerless Assassin 120 SE', 'Thermalright', 33.90, 'cooler', NULL),
-('Kraken Elite 360', 'NZXT', 279.99, 'cooler', NULL);
+('Network Card', 'Intel', 39.99, 'network_card', 'https://cdn.brandfetch.io/idTGhLyv09/w/400/h/400/theme/dark/icon.png?c=1dxbfHSJFAPEGdCLU4o5B'),         
+('Network Adapter', 'TP-Link', 29.99, 'network_adapter', 'https://cdn.brandfetch.io/idfUqCiOVX/w/400/h/400/theme/dark/icon.jpeg?c=1dxbfHSJFAPEGdCLU4o5B'),     
+('Optical Drive', 'LG', 19.99, 'optical_drive', 'https://cdn.brandfetch.io/idEI6u48uh/w/400/h/400/theme/dark/icon.jpeg?c=1dxbfHSJFAPEGdCLU4o5B'),           
+('Memory Card', 'SanDisk', 15.99, 'memory_card', 'https://cdn.brandfetch.io/idM3tf3Iq8/w/800/h/800/theme/dark/icon.jpeg?c=1dxbfHSJFAPEGdCLU4o5B'),        
+('Cables Pack', 'Corsair', 9.99, 'cables', 'https://cwsmgmt.corsair.com/press/CORSAIRLogo2020_stack_W.png'),
+('Ryzen 5 7600', 'AMD', 229.00, 'cpu', 'https://static.hardwaredb.net/badges/ryzen-5-7600.png'),
+('Ryzen 7 7800X3D', 'AMD', 399.00, 'cpu', 'https://static.hardwaredb.net/badges/ryzen-7-7800x3d.png'),
+('Ryzen 9 7950X', 'AMD', 599.00, 'cpu', 'https://static.hardwaredb.net/badges/ryzen-9-7950x.png'),
+('Core i3-13100F', 'Intel', 119.99, 'cpu', 'https://static.hardwaredb.net/badges/core-i3-13100.png'),
+('Core i5-13600K', 'Intel', 319.99, 'cpu', 'https://static.hardwaredb.net/badges/core-i5-13600k.png'),
+('Core i7-14700K', 'Intel', 409.99, 'cpu', 'https://static.hardwaredb.net/badges/core-i7-14700k.png'),
+('Core i9-14900KS', 'Intel', 689.99, 'cpu', 'https://static.hardwaredb.net/badges/core-i9-14900ks.png'),
+('Radeon RX 6600', 'PowerColor', 199.99, 'gpu', 'https://static.hardwaredb.net/badges/radeon-rx-6600.png'),
+('Radeon RX 7600', 'Sapphire', 269.99, 'gpu', 'https://static.hardwaredb.net/badges/radeon-rx-7600.png'),
+('Radeon RX 7800 XT', 'XFX', 499.99, 'gpu', 'https://static.hardwaredb.net/badges/radeon-rx-7800-xt.png'),
+('Radeon RX 7900 XTX', 'Sapphire', 999.99, 'gpu', 'https://static.hardwaredb.net/badges/radeon-rx-7900-xtx.png'),
+('GeForce RTX 3050', 'MSI', 229.99, 'gpu', 'https://static.hardwaredb.net/badges/geforce-rtx-3050.png'),
+('GeForce RTX 4060', 'Zotac', 299.99, 'gpu', 'https://static.hardwaredb.net/badges/geforce-rtx-4060.png'),
+('GeForce RTX 4070 Super', 'ASUS', 599.99, 'gpu', 'https://static.hardwaredb.net/badges/geforce-rtx-4070-super.png'),
+('GeForce RTX 4080 Super', 'Gigabyte', 999.99, 'gpu', 'https://static.hardwaredb.net/badges/geforce-rtx-4080-super.png'),
+('GeForce RTX 4090', 'NVIDIA', 1599.99, 'gpu', 'https://static.hardwaredb.net/badges/geforce-rtx-4090.png'),
+('B650M DS3H', 'Gigabyte', 149.99, 'motherboard', 'https://images.seeklogo.com/logo-png/39/1/gigabyte-logo-png_seeklogo-398170.png'),
+('X670E AORUS Master', 'Gigabyte', 459.99, 'motherboard', 'https://images.seeklogo.com/logo-png/39/1/gigabyte-logo-png_seeklogo-398170.png'),
+('B760M Bomber WiFi', 'MSI', 129.99, 'motherboard', 'https://images.seeklogo.com/logo-png/30/1/msi-logo-png_seeklogo-304877.png'),
+('Z790 Maximus Hero', 'ASUS', 599.99, 'motherboard', 'https://cdn.brandfetch.io/idGnlhbTXH/w/400/h/400/theme/dark/icon.jpeg?c=1dxbfHSJFAPEGdCLU4o5B'),
+('Vengeance LPX 16GB', 'Corsair', 39.99, 'memory', 'https://cwsmgmt.corsair.com/press/CORSAIRLogo2020_stack_W.png'),
+('Ripjaws V 32GB', 'G.Skill', 69.99, 'memory', 'https://cdn.brandfetch.io/id8HgeVn1l/w/400/h/400/theme/dark/icon.jpeg?c=1dxbfHSJFAPEGdCLU4o5B'),
+('Trident Z5 RGB 32GB', 'G.Skill', 114.99, 'memory', 'https://cdn.brandfetch.io/id8HgeVn1l/w/400/h/400/theme/dark/icon.jpeg?c=1dxbfHSJFAPEGdCLU4o5B'),
+('Dominator Platinum 64GB', 'Corsair', 289.99, 'memory', 'https://cwsmgmt.corsair.com/press/CORSAIRLogo2020_stack_W.png'),
+('Crucial P3 1TB', 'Crucial', 64.99, 'storage', 'https://cdn.brandfetch.io/idcQwroMOv/w/400/h/400/theme/dark/icon.jpeg?c=1dxbfHSJFAPEGdCLU4o5B'),
+('WD Black SN850X 2TB', 'Western Digital', 159.99, 'storage', 'https://cdn.brandfetch.io/id6bAnMJ1y/w/400/h/400/theme/dark/icon.jpeg?c=1dxbfHSJFAPEGdCLU4o5B'),
+('Samsung 990 Pro 4TB', 'Samsung', 349.99, 'storage', 'https://cdn.brandfetch.io/iduaw_nOnR/w/400/h/400/theme/dark/icon.jpeg?c=1dxbfHSJFAPEGdCLU4o5B'),
+('H5 Flow', 'NZXT', 94.99, 'case', 'https://nzxt.com/cdn/shop/files/h5-flow-rgb-h5-flow-rgb-primary-lg.png?v=1744863470&width=2000'),
+('4000D Airflow', 'Corsair', 104.99, 'case', 'https://assets.corsair.com/image/upload/c_pad,q_auto,h_1024,w_1024,f_auto/products/Cases/base-4000d-airflow-config/Gallery/4000D_AF_BLACK_01.webp'),
+('O11 Dynamic Evo', 'Lian Li', 159.99, 'case', 'https://www.pbtech.co.nz/imgprod/C/H/CHALAN2074__1.jpg?h=2971221114'),
+('Versa H18', 'Thermaltake', 49.99, 'case', 'https://cdn.mwave.com.au/images/400/AC11503_2.jpg'),
+('Smart 500W', 'Thermaltake', 39.99, 'power_supply', 'https://cdn.brandfetch.io/idkwuFYTlH/w/400/h/400/theme/dark/icon.jpeg?c=1dxbfHSJFAPEGdCLU4o5B'),
+('RM750e', 'Corsair', 99.99, 'power_supply', 'https://cwsmgmt.corsair.com/press/CORSAIRLogo2020_stack_W.png'),
+('SuperNOVA 1000 GT', 'EVGA', 169.99, 'power_supply', 'https://cdn.brandfetch.io/iddPf9bbl3/w/400/h/400/theme/dark/icon.jpeg?c=1dxbfHSJFAPEGdCLU4o5B'),
+('Peerless Assassin 120 SE', 'Thermalright', 33.90, 'cooler', 'https://cdn.brandfetch.io/id2Wov4r9a/w/339/h/339/theme/dark/icon.png?c=1dxbfHSJFAPEGdCLU4o5B'),
+('Kraken Elite 360', 'NZXT', 279.99, 'cooler', 'https://cdn.brandfetch.io/id6LxRitGO/w/1080/h/1080/theme/dark/icon.jpeg?c=1dxbfHSJFAPEGdCLU4o5B');
 
 INSERT INTO cpu (component_id, socket, cores, threads, base_clock, boost_clock, tdp) VALUES
 (1, 'AM4', 6, 12, 3.7, 4.6, 65),
@@ -150,6 +150,22 @@ INSERT INTO pc_case (component_id, cooler_max_height, gpu_max_length) VALUES
 INSERT INTO case_mobo_form_factors (case_id, form_factor) VALUES
 (5, 'ATX'), (5, 'Micro-ATX');
 
+INSERT INTO case_mobo_form_factors (case_id, form_factor) VALUES
+  ((SELECT id FROM components WHERE name = 'H5 Flow'), 'ATX'),
+  ((SELECT id FROM components WHERE name = 'H5 Flow'), 'Micro-ATX'),
+  ((SELECT id FROM components WHERE name = '4000D Airflow'), 'ATX'),
+  ((SELECT id FROM components WHERE name = '4000D Airflow'), 'Micro-ATX'),
+  ((SELECT id FROM components WHERE name = 'O11 Dynamic Evo'), 'ATX'),
+  ((SELECT id FROM components WHERE name = 'O11 Dynamic Evo'), 'Micro-ATX'),
+  ((SELECT id FROM components WHERE name = 'Versa H18'), 'Micro-ATX');
+
+INSERT INTO case_storage_form_factors (case_id, form_factor, num_slots) VALUES
+  (5, 'M.2', 2),
+  ((SELECT id FROM components WHERE name = 'H5 Flow'), 'M.2', 3),
+  ((SELECT id FROM components WHERE name = '4000D Airflow'), 'M.2', 3),
+  ((SELECT id FROM components WHERE name = 'O11 Dynamic Evo'), 'M.2', 4),
+  ((SELECT id FROM components WHERE name = 'Versa H18'), 'M.2', 2);
+
 INSERT INTO power_supply (component_id, type, wattage, form_factor) VALUES
 (4, 'Modular', 650, 'ATX'),
 ((SELECT id FROM components WHERE name='Smart 500W'), 'Non-Modular', 500, 'ATX'),
@@ -164,11 +180,28 @@ INSERT INTO cooler (component_id, type, height, max_tdp_supported) VALUES
 INSERT INTO cooler_cpu_sockets (cooler_id, socket) VALUES
 (6, 'AM4'), (6, 'AM5');
 
+INSERT INTO cooler_cpu_sockets (cooler_id, socket) VALUES
+  ((SELECT id FROM components WHERE name = 'Peerless Assassin 120 SE'), 'AM4'),
+  ((SELECT id FROM components WHERE name = 'Peerless Assassin 120 SE'), 'AM5'),
+  ((SELECT id FROM components WHERE name = 'Peerless Assassin 120 SE'), 'LGA1700');
+
+INSERT INTO cooler_cpu_sockets (cooler_id, socket) VALUES
+  ((SELECT id FROM components WHERE name = 'Kraken Elite 360'), 'AM4'),
+  ((SELECT id FROM components WHERE name = 'Kraken Elite 360'), 'AM5'),
+  ((SELECT id FROM components WHERE name = 'Kraken Elite 360'), 'LGA1700');
+
+INSERT INTO case_ps_form_factors (case_id, form_factor) VALUES
+  (5, 'ATX'),
+  ((SELECT id FROM components WHERE name = 'H5 Flow'), 'ATX'),
+  ((SELECT id FROM components WHERE name = '4000D Airflow'), 'ATX'),
+  ((SELECT id FROM components WHERE name = 'O11 Dynamic Evo'), 'ATX'),
+  ((SELECT id FROM components WHERE name = 'Versa H18'), 'ATX');
+
 INSERT INTO sound_card (component_id, sample_rate, bit_depth, chipset, interface, channel) VALUES (9, 192000, 24, 'SoundCore', 'PCIe', '7.1');
 INSERT INTO network_card (component_id, num_ports, speed, interface) VALUES (10, 2, 1000, 'PCIe');
 INSERT INTO network_adapter (component_id, wifi_version, interface, num_antennas) VALUES (11, 'WiFi 6', 'PCIe', 3);
 INSERT INTO optical_drive (component_id, form_factor, type, interface, write_speed, read_speed) VALUES (12, '5.25"', 'DVD-RW', 'SATA', 16, 16);
-INSERT INTO memory_card (component_id, num_slots, interface) VALUES (13, 1, 'SD');
+INSERT INTO memory_card (component_id, num_slots, interface) VALUES (13, 1, '2.5');
 INSERT INTO cables (component_id, length_cm, type) VALUES (14, 50, 'SATA');
 
 INSERT INTO build (user_id, name, created_at, description, total_price, is_approved) VALUES
@@ -329,7 +362,8 @@ INSERT INTO rating_build (build_id, user_id, value) VALUES
 ((SELECT id FROM build WHERE name='Radeon Ultimate'), (SELECT id FROM users WHERE username='linux_fan'), 5);
 
 INSERT INTO suggestions (user_id, admin_id, link, admin_comment, description, status, component_type) VALUES
-(1, 4, 'https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/rtx-4070-family/', NULL, 'Consider adding RTX 4070', 'pending', 'gpu');`
+(1, 4, 'https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/rtx-4070-family/', NULL, 'Consider adding RTX 4070', 'pending', 'gpu'); 
+`
 
 async function main() {
     if (!process.env.DATABASE_URL) {
