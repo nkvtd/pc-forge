@@ -153,9 +153,9 @@ export default function BuildDetailsDialog({open, buildId, onClose, currentUser,
                                                         <TableRow key={comp.id}>
                                                             <TableCell sx={{width: 50}}>
                                                                 <Avatar
-                                                                    src={comp.img_url || undefined}
+                                                                    src={comp.imgUrl || undefined}
                                                                     variant="rounded"
-                                                                    sx={{width: 45, height: 45, bgcolor: '#ff8201'}}
+                                                                    sx={{width: 50, height: 50, bgcolor: '#ff8201'}}
                                                                 >
                                                                     {comp.type?.substring(0, 3)?.toUpperCase()}
                                                                 </Avatar>
