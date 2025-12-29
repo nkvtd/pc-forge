@@ -1,5 +1,5 @@
 import * as drizzleQueries from "../../../database/drizzle/queries";
-import { requireAdmin } from "../../../server/telefunc/ctx";
+import {requireAdmin} from "../../../server/telefunc/ctx";
 import {Abort} from "telefunc";
 import { validateComponentSpecificData } from "../../../database/drizzle/util/componentFieldConfig";
 

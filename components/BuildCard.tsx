@@ -1,11 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import {Card, CardContent, CardMedia, Typography, Box, Chip} from '@mui/material';
+import {Card, CardContent, CardMedia, Typography, Box, Chip, CircularProgress} from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import {onGetBuildDetails} from "../pages/+Layout.telefunc";
 
 export default function BuildCard({build, onClick}: { build: any, onClick?: () => void }) {
     const [caseImage, setCaseImage] = useState<string>("https://placehold.co/600x400?text=PC+Build");
     const [imageLoading, setImageLoading] = useState(true);
+    const [details, setDetails] = useState<any>(null);
 
     const formattedPrice = new Intl.NumberFormat('en-US', {
         style: 'currency',
@@ -13,15 +14,33 @@ export default function BuildCard({build, onClick}: { build: any, onClick?: () =
     }).format(build.total_price || 0);
 
     useEffect(() => {
+        setImageLoading(true);
         onGetBuildDetails({buildId: build.id})
-            .then(details => {
-                const caseComponent = details.components.find((c: any) => c.type === 'case');
-                setCaseImage(caseComponent?.imgUrl || caseComponent?.imgUrl || "https://placehold.co/600x400?text=PC+Build");
+            .then(fullDetails => {
+                setDetails(fullDetails);
+
+                const caseComponent = fullDetails.components?.find((c: any) => c.type === 'case');
+                setCaseImage(
+                    caseComponent?.imgUrl ||
+                    "https://placehold.co/600x400?text=PC+Build"
+                );
             })
-            .catch(() => {
+            .catch((error) => {
+                console.error("Failed to load build details:", error);
+                setDetails(null);
             })
-            .finally(() => setImageLoading(false));
+            .finally(() => {
+                setImageLoading(false);
+            });
     }, [build.id]);
+
+    if (imageLoading) {
+        return (
+            <Card sx={{width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                <CircularProgress />
+            </Card>
+        );
+    }
 
     return (
         <Card
@@ -43,7 +62,7 @@ export default function BuildCard({build, onClick}: { build: any, onClick?: () =
             <Box sx={{position: 'relative', paddingTop: '75%'}}>
                 <CardMedia
                     component="img"
-                    image={caseImage || '/placeholder-pc.png'}
+                    image={caseImage}
                     alt={build.name}
                     sx={{
                         position: 'absolute',
@@ -59,9 +78,19 @@ export default function BuildCard({build, onClick}: { build: any, onClick?: () =
             </Box>
 
             <CardContent sx={{flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
-                <Box sx={{mb: 2}}>
-                    <Typography variant="h6" component="div" fontWeight="bold" wrap title={build.name}>
+                <Box sx={{mb: 1}}>
+                    <Typography variant="h6" component="div" fontWeight="bold">
                         {build.name}
+                    </Typography>
+                </Box>
+
+                <Box sx={{mb: 2}}>
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{fontStyle: 'italic', fontSize: '0.875rem'}}
+                    >
+                        {details?.description || "No description provided."}
                     </Typography>
                 </Box>
 
@@ -74,9 +103,9 @@ export default function BuildCard({build, onClick}: { build: any, onClick?: () =
                         sx={{fontWeight: 'bold'}}
                     />
                     <Box sx={{display: 'flex', alignItems: 'center'}}>
-                        <StarIcon sx={{color: '#faaf00', fontSize: 20, mr: 0.5}}/>
+                        <StarIcon sx={{color: '#faaf00', fontSize: 20, ml: 1}}/>
                         <Typography variant="body2" fontWeight="bold">
-                            {Number(build.avgRating || 5).toFixed(1)}
+                            {Number(build.avgRating || 0).toFixed(1)}
                         </Typography>
                     </Box>
                 </Box>

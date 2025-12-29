@@ -2,7 +2,7 @@ import React, {useState, useEffect, useMemo} from 'react';
 import {
     Container, Paper, Typography, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
     Button, IconButton, Avatar, TextField, Grid, Chip, CircularProgress,
-    Menu, MenuItem, ListItemIcon
+    Menu, MenuItem, ListItemIcon, Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -17,7 +17,8 @@ import {
     onAddComponentToBuild,
     onRemoveComponentFromBuild,
     onDeleteBuild,
-    onGetBuildState, onGetBuildComponents
+    onGetBuildState,
+    onGetBuildComponents
 } from './forge.telefunc';
 
 import ComponentDialog from '../../components/ComponentDialog';
@@ -56,12 +57,24 @@ export default function ForgePage() {
     const [activeSlotId, setActiveSlotId] = useState<string | null>(null);
     const [detailsOpen, setDetailsOpen] = useState<any>(null);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [submitDialogOpen, setSubmitDialogOpen] = useState(false);  // NEW
+    const [tempDescription, setTempDescription] = useState("");      // NEW
     const isSubmittedRef = React.useRef(false);
 
     useEffect(() => {
         const price = slots.reduce((sum, slot) => sum + (Number(slot.component?.price) || 0), 0);
         setTotalPrice(price);
     }, [slots]);
+
+    useEffect(() => {
+        if (buildId && buildName.trim()) {
+            const timeoutId = setTimeout(() => {
+                saveBuildState({ buildId, name: buildName.trim(), description });
+            }, 1000);
+
+            return () => clearTimeout(timeoutId);
+        }
+    }, [buildId, buildName, description]);
 
     useEffect(() => {
         if (!buildId) return;
@@ -90,32 +103,40 @@ export default function ForgePage() {
 
         if (urlBuildId && Number.isInteger(Number(urlBuildId)) && Number(urlBuildId) > 0) {
             const loadBuildId = Number(urlBuildId);
-            onGetBuildComponents({ buildId: loadBuildId })
-                .then(async (components) => {
-                    if (components && components.length > 0) {
+
+            onGetBuildState({ buildId: loadBuildId })
+                .then((buildState) => {
+                    if (buildState) {
                         setBuildId(loadBuildId);
-                        setBuildName("Cloned Build");
-                        setDescription("");
-
-                        const detailedComponents = await Promise.all(
-                            components.map(async (c: any) => {
-                                const full = await onGetComponentDetails({ componentId: c.id }).catch(() => null);
-                                return full ? { ...c, ...full, details: full?.details } : c;
-                            })
-                        );
-
-                        const componentMap = new Map();
-                        detailedComponents.forEach((c: any) => componentMap.set(c.type, c));
-
-                        setSlots(prevSlots => prevSlots.map(slot => {
-                            const match = componentMap.get(slot.type);
-                            return match ? { ...slot, component: match } : slot;
-                        }));
-
-                        window.history.replaceState({}, document.title, "/forge");
+                        setBuildName(buildState.build.name);
+                        setDescription(buildState.build.description || "");
                     }
                 })
-                .catch(() => {});
+                .catch(() => {})
+                .finally(() => {
+                    onGetBuildComponents({ buildId: loadBuildId })
+                        .then(async (components) => {
+                            if (components && components.length > 0) {
+                                const detailedComponents = await Promise.all(
+                                    components.map(async (c: any) => {
+                                        const full = await onGetComponentDetails({ componentId: c.id }).catch(() => null);
+                                        return full ? { ...c, ...full, details: full?.details } : c;
+                                    })
+                                );
+
+                                const componentMap = new Map();
+                                detailedComponents.forEach((c: any) => componentMap.set(c.type, c));
+
+                                setSlots(prevSlots => prevSlots.map(slot => {
+                                    const match = componentMap.get(slot.type);
+                                    return match ? { ...slot, component: match } : slot;
+                                }));
+
+                                window.history.replaceState({}, document.title, "/forge");
+                            }
+                        })
+                        .catch(() => {});
+                });
         }
     }, []);
 
@@ -158,7 +179,6 @@ export default function ForgePage() {
         }
     };
 
-
     const handleRemovePart = async (slotId: string) => {
         const slot = slots.find(s => s.id === slotId);
         if (!slot?.component || !buildId) return;
@@ -198,14 +218,23 @@ export default function ForgePage() {
         setSlots(prev => prev.filter(s => s.id !== slotId));
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = () => {
         if (!buildName.trim()) return alert("Please name your build!");
         if (!buildId) return alert("You must add at least one component before submitting.");
 
-        setIsSubmitting(true);
-        try {
-            const result = await onEditBuild({buildId});
+        setTempDescription(description || "");
+        setSubmitDialogOpen(true);
+    };
 
+    const handleSubmitConfirm = async () => {
+        if(!buildId) return;
+
+        setIsSubmitting(true);
+        setSubmitDialogOpen(false);
+
+        try {
+            await saveBuildState({ buildId, name: buildName.trim(), description: tempDescription });
+            const result = await onEditBuild({buildId});
             if (!result) throw new Error("Failed to save build");
 
             isSubmittedRef.current = true;
@@ -217,7 +246,6 @@ export default function ForgePage() {
             setIsSubmitting(false);
         }
     };
-
 
     const activeSlotType = useMemo(() => {
         if (!activeSlotId) return null;
@@ -409,6 +437,46 @@ export default function ForgePage() {
                 component={detailsOpen}
                 onClose={() => setDetailsOpen(null)}
             />
+
+            <Dialog open={submitDialogOpen} onClose={() => setSubmitDialogOpen(false)} maxWidth="sm" fullWidth>
+                <DialogTitle sx={{ bgcolor: '#ff8201', color: 'white', fontWeight: 'bold' }}>
+                    Build Description
+                </DialogTitle>
+                <DialogContent sx={{ p: 3 }}>
+                    <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary' }}>
+                        Add some notes about your build (optional):
+                    </Typography>
+                    <TextField
+                        fullWidth
+                        multiline
+                        rows={4}
+                        placeholder="e.g. Gaming build for 1440p, quiet operation, future-proof..."
+                        value={tempDescription}
+                        onChange={(e) => setTempDescription(e.target.value)}
+                        variant="outlined"
+                    />
+                </DialogContent>
+                <DialogActions sx={{ p: 3, pt: 0 }}>
+                    <Button onClick={() => setSubmitDialogOpen(false)}>
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleSubmitConfirm}
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <CircularProgress size={20} sx={{ mr: 1 }} />
+                                Submitting...
+                            </>
+                        ) : (
+                            'Submit Build'
+                        )}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Container>
     );
 }

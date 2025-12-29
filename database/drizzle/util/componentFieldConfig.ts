@@ -65,8 +65,8 @@ export const typeConfigMap: Record<ComponentType, ComponentConfig> = {
 };
 
 export const requiredFields: Record<ComponentType, string[]> = {
-    cpu: ['socket', 'cores', 'threads', 'baseClock', 'tdp'],
-    gpu: ['vram', 'tdp', 'chipset', 'length'],
+    cpu: ['socket', 'cores', 'threads', 'baseClock', 'boostClock', 'tdp'],
+    gpu: ['vram', 'baseClock', 'boostClock', 'tdp', 'chipset', 'length'],
     memory: ['type', 'speed', 'capacity', 'modules'],
     storage: ['type', 'capacity', 'formFactor'],
     power_supply: ['type', 'wattage', 'formFactor'],

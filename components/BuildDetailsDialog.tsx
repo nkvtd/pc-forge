@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid, Box, Typography,
     IconButton, Tab, Tabs, Table, TableBody, TableCell, TableRow, Rating, TextField, Avatar, Chip, Alert
@@ -50,10 +50,9 @@ export default function BuildDetailsDialog({open, buildId, onClose, currentUser,
         }
     }, [open, buildId]);
 
-    // Ownership check for edit button
     useEffect(() => {
         if (open && buildId !== null && typeof buildId === 'number') {
-            onGetBuildState({ buildId })  // ← Only buildId, no userId!
+            onGetBuildState({buildId})
                 .then(state => {
                     setIsOwner(!!state);
                 })
@@ -90,7 +89,7 @@ export default function BuildDetailsDialog({open, buildId, onClose, currentUser,
         if (!cloningBuildId) return;
 
         try {
-            const newBuildId = await onCloneBuild({ buildId: cloningBuildId });
+            const newBuildId = await onCloneBuild({buildId: cloningBuildId});
             window.location.href = `/forge?buildId=${newBuildId}`;
             setCloneDialogOpen(false);
             setCloningBuildId(null);

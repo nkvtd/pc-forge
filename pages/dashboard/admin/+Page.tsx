@@ -9,6 +9,8 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import BuildIcon from '@mui/icons-material/Build';
 import MemoryIcon from '@mui/icons-material/Memory';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import {
     getAdminInfoAndData,
@@ -18,15 +20,20 @@ import {
 
 import BuildCard from '../../../components/BuildCard';
 import BuildDetailsDialog from '../../../components/BuildDetailsDialog';
-import DeleteIcon from "@mui/icons-material/Delete";
 import {onDeleteBuild} from "../user/userDashboard.telefunc";
+import AddComponentDialog from "../../../components/AddComponentDialog";
 
 export default function AdminDashboard() {
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [selectedBuildId, setSelectedBuildId] = useState<number | null>(null);
-    const [deleteDialog, setDeleteDialog] = useState<{ open: boolean, buildId: number | null, buildName: string }>({ open: false, buildId: null, buildName: '' });
+    const [deleteDialog, setDeleteDialog] = useState<{
+        open: boolean,
+        buildId: number | null,
+        buildName: string
+    }>({open: false, buildId: null, buildName: ''});
     const [deleteLoading, setDeleteLoading] = useState(false);
+    const [addDialogOpen, setAddDialogOpen] = useState(false);
 
     const [buildApprovalDialog, setBuildApprovalDialog] = useState<{
         open: boolean,
@@ -44,6 +51,7 @@ export default function AdminDashboard() {
     const [adminComment, setAdminComment] = useState("");
 
     const loadData = () => {
+        setLoading(true);
         getAdminInfoAndData()
             .then(res => {
                 setData(res);
@@ -52,6 +60,7 @@ export default function AdminDashboard() {
             .catch(err => {
                 console.error(err);
                 alert("Failed to load admin data. Are you an admin?");
+                setLoading(false);
             });
     };
 
@@ -113,7 +122,7 @@ export default function AdminDashboard() {
     };
 
     const openDeleteDialog = (buildId: number, buildName: string) => {
-        setDeleteDialog({ open: true, buildId, buildName });
+        setDeleteDialog({open: true, buildId, buildName});
     };
 
     const handleDelete = async () => {
@@ -121,8 +130,8 @@ export default function AdminDashboard() {
         setDeleteLoading(true);
         try {
             await onDeleteBuild({buildId: deleteDialog.buildId});
-            setDeleteDialog({ open: false, buildId: null, buildName: '' });
-            loadData(); // refresh na user i favorite builds
+            setDeleteDialog({open: false, buildId: null, buildName: ''});
+            loadData();
             setSelectedBuildId(null);
         } catch (e) {
             alert("Failed to delete build");
@@ -131,8 +140,23 @@ export default function AdminDashboard() {
         }
     };
 
-    if (loading) return <Box sx={{p: 5, textAlign: 'center'}}><CircularProgress/></Box>;
-    if (!data) return <Box sx={{p: 5, textAlign: 'center'}}>Access Denied</Box>;
+    if (loading) {
+        return (
+            <Container maxWidth="xl" sx={{mt: 4, mb: 10, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh'}}>
+                <CircularProgress />
+            </Container>
+        );
+    }
+
+    if (!data) {
+        return (
+            <Container maxWidth="xl" sx={{mt: 4, mb: 10, textAlign: 'center', p: 5}}>
+                <Typography variant="h6" color="error">
+                    Access Denied - Admin privileges required
+                </Typography>
+            </Container>
+        );
+    }
 
     return (
         <Container maxWidth="xl" sx={{mt: 4, mb: 10}}>
@@ -150,8 +174,10 @@ export default function AdminDashboard() {
                         <Avatar sx={{width: 120, height: 120, mb: 2, bgcolor: 'error.main'}}>
                             <AdminPanelSettingsIcon sx={{fontSize: 70}}/>
                         </Avatar>
-                        <Typography variant="h5" fontWeight="bold">{data.admin.username}</Typography>
-                        <Typography variant="body2" sx={{opacity: 0.7, mb: 3}}>{data.admin.email}</Typography>
+                        <Typography variant="h5" fontWeight="bold">{data.admin?.username || 'Admin'}</Typography>
+                        <Typography variant="body2" sx={{opacity: 0.7, mb: 3}}>
+                            {data.admin?.email || 'admin@example.com'}
+                        </Typography>
 
                         <Chip label="ADMINISTRATOR" color="error" variant="outlined" sx={{fontWeight: 'bold'}}/>
                         <Divider sx={{width: '100%', my: 3, bgcolor: 'rgba(255,255,255,0.1)'}}/>
@@ -161,6 +187,20 @@ export default function AdminDashboard() {
                                 {data.pendingBuilds?.length || 0}
                             </Typography>
                             <Typography variant="caption">Pending Builds</Typography>
+                        </Box>
+
+                        <Box sx={{width: '100%', textAlign: 'center', mt: 3}}>
+                            <Button
+                                variant="contained"
+                                color="warning"
+                                size="large"
+                                fullWidth
+                                startIcon={<BuildIcon />}
+                                onClick={() => setAddDialogOpen(true)}
+                                sx={{ mb: 2 }}
+                            >
+                                Add Component
+                            </Button>
                         </Box>
                     </Paper>
                 </Grid>
@@ -189,23 +229,34 @@ export default function AdminDashboard() {
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
-                                            {data.componentSuggestions.map((sug: any) => (
+                                            {data.componentSuggestions?.map((sug: any) => (
                                                 <TableRow key={sug.id}>
                                                     <TableCell sx={{maxWidth: 300}}>
-                                                        <a href={sug.link} title={sug.link}
-                                                           style={{textDecoration: 'none', color: 'inherit'}}>
+                                                        <a
+                                                            href={sug.link}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            title={sug.link}
+                                                            style={{textDecoration: 'none', color: 'inherit'}}
+                                                        >
                                                             {sug.description || sug.link}
                                                         </a>
                                                     </TableCell>
-                                                    <TableCell>{sug.componentType.toUpperCase()}</TableCell>
+                                                    <TableCell>{sug.componentType?.toUpperCase()}</TableCell>
                                                     <TableCell>{sug.userId}</TableCell>
                                                     <TableCell align="right">
-                                                        <IconButton size="small" color="success"
-                                                                    onClick={() => openSuggestionReview(sug.id, 'approved')}>
+                                                        <IconButton
+                                                            size="small"
+                                                            color="success"
+                                                            onClick={() => openSuggestionReview(sug.id, 'approved')}
+                                                        >
                                                             <CheckCircleIcon/>
                                                         </IconButton>
-                                                        <IconButton size="small" color="error"
-                                                                    onClick={() => openSuggestionReview(sug.id, 'rejected')}>
+                                                        <IconButton
+                                                            size="small"
+                                                            color="error"
+                                                            onClick={() => openSuggestionReview(sug.id, 'rejected')}
+                                                        >
                                                             <CancelIcon/>
                                                         </IconButton>
                                                     </TableCell>
@@ -231,7 +282,7 @@ export default function AdminDashboard() {
                                 ) : (
                                     <Grid container spacing={2}>
                                         {data.pendingBuilds.map((build: any) => (
-                                            <Grid item xs={12} md={4} key={build.id}>
+                                            <Grid item xs={12} sm={6} md={4} lg={3} key={build.id}>
                                                 <Box sx={{position: 'relative'}}>
                                                     <BuildCard
                                                         build={build}
@@ -241,17 +292,17 @@ export default function AdminDashboard() {
                                                         mt: 1,
                                                         display: 'flex',
                                                         gap: 1,
-                                                        justifyContent: 'center',
-                                                        bgcolor: '#292929',
-                                                        p: 1,
-                                                        borderRadius: 1
+                                                        justifyContent: 'center'
                                                     }}>
                                                         <Button
                                                             variant="contained"
                                                             color="warning"
                                                             size="small"
-                                                            startIcon={<BuildIcon/>}
-                                                            onClick={() => openBuildApproval(build.id, build.name)}
+                                                            startIcon={<BuildIcon />}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                openBuildApproval(build.id, build.name);
+                                                            }}
                                                         >
                                                             Review
                                                         </Button>
@@ -274,13 +325,13 @@ export default function AdminDashboard() {
                                 ) : (
                                     <Grid container spacing={2}>
                                         {data.userBuilds.slice(0, 4).map((build: any) => (
-                                            <Grid item xs={12} sm={6} md={4} key={build.id}>
-                                                <Box sx={{ position: 'relative' }}>
+                                            <Grid item xs={12} sm={6} md={4} lg={3} key={build.id}>
+                                                <Box sx={{position: 'relative'}}>
                                                     <BuildCard
                                                         build={build}
                                                         onClick={() => setSelectedBuildId(build.id)}
                                                     />
-                                                    <Box sx={{ mt: 1, display: 'flex', justifyContent: 'center' }}>
+                                                    <Box sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
                                                         <Button
                                                             variant="outlined"
                                                             color="error"
@@ -290,7 +341,7 @@ export default function AdminDashboard() {
                                                                 e.stopPropagation();
                                                                 openDeleteDialog(build.id, build.name);
                                                             }}
-                                                            sx={{ width: '100%' }}
+                                                            fullWidth
                                                         >
                                                             Delete
                                                         </Button>
@@ -306,14 +357,18 @@ export default function AdminDashboard() {
                 </Grid>
             </Grid>
 
-            <Dialog open={suggestionDialog.open}
-                    onClose={() => setSuggestionDialog({...suggestionDialog, open: false})}>
+            <Dialog open={suggestionDialog.open} onClose={() => setSuggestionDialog({...suggestionDialog, open: false})}>
                 <DialogTitle>Review Component Suggestion</DialogTitle>
                 <DialogContent>
                     <Typography gutterBottom>Status: <b>{suggestionDialog.action.toUpperCase()}</b></Typography>
                     <TextField
-                        fullWidth label="Admin Comment" multiline rows={3}
-                        value={adminComment} onChange={(e) => setAdminComment(e.target.value)}
+                        fullWidth
+                        label="Admin Comment"
+                        multiline
+                        rows={3}
+                        value={adminComment}
+                        onChange={(e) => setAdminComment(e.target.value)}
+                        sx={{ mt: 2 }}
                     />
                 </DialogContent>
                 <DialogActions>
@@ -322,8 +377,10 @@ export default function AdminDashboard() {
                 </DialogActions>
             </Dialog>
 
-            <Dialog open={buildApprovalDialog.open}
-                    onClose={() => setBuildApprovalDialog({open: false, buildId: null, buildName: ''})}>
+            <Dialog
+                open={buildApprovalDialog.open}
+                onClose={() => setBuildApprovalDialog({open: false, buildId: null, buildName: ''})}
+            >
                 <DialogTitle>Review Build</DialogTitle>
                 <DialogContent>
                     <Typography variant="h6" gutterBottom>{buildApprovalDialog.buildName}</Typography>
@@ -367,7 +424,10 @@ export default function AdminDashboard() {
                 </DialogActions>
             </Dialog>
 
-            <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ open: false, buildId: null, buildName: '' })}>
+            <Dialog
+                open={deleteDialog.open}
+                onClose={() => setDeleteDialog({open: false, buildId: null, buildName: ''})}
+            >
                 <DialogTitle>Delete Build</DialogTitle>
                 <DialogContent>
                     <Typography variant="h6" gutterBottom>{deleteDialog.buildName}</Typography>
@@ -377,7 +437,7 @@ export default function AdminDashboard() {
                 </DialogContent>
                 <DialogActions>
                     <Button
-                        onClick={() => setDeleteDialog({ open: false, buildId: null, buildName: '' })}
+                        onClick={() => setDeleteDialog({open: false, buildId: null, buildName: ''})}
                         disabled={deleteLoading}
                     >
                         Cancel
@@ -387,7 +447,7 @@ export default function AdminDashboard() {
                         variant="contained"
                         color="error"
                         disabled={deleteLoading}
-                        startIcon={deleteLoading ? <CircularProgress size={20} /> : <DeleteIcon />}
+                        startIcon={deleteLoading ? <CircularProgress size={20}/> : <DeleteIcon />}
                     >
                         {deleteLoading ? 'Deleting...' : 'Delete Build'}
                     </Button>
@@ -396,11 +456,19 @@ export default function AdminDashboard() {
 
             <BuildDetailsDialog
                 open={!!selectedBuildId}
-                buildId={selectedBuildId}
-                currentUser={data.admin?.id}
+                buildId={selectedBuildId!}
+                currentUser={data.admin}
                 onClose={() => setSelectedBuildId(null)}
-                onClone={() => alert("Clone disabled in admin view")}
                 isDashboardView={true}
+            />
+
+            <AddComponentDialog
+                open={addDialogOpen}
+                onClose={() => setAddDialogOpen(false)}
+                onSuccess={() => {
+                    loadData();
+                    setAddDialogOpen(false);
+                }}
             />
         </Container>
     );
