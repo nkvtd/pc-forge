@@ -11,7 +11,7 @@ import {
     ratingBuildsTable, soundCardsTable, storageTable
 } from "../schema";
 import {and, asc, desc, eq, ilike, SQL, sql} from "drizzle-orm";
-import {typeConfigMap, ComponentType} from "../util/componentFieldConfig";
+import {typeConfigMap, ComponentType, requiredFields} from "../util/componentFieldConfig";
 import {AnyPgColumn} from "drizzle-orm/pg-core";
 import {inArray} from "drizzle-orm/sql/expressions/conditions";
 export async function getAllComponents(db: Database, limit?: number, componentType?: string, sort?: string, q?: string) {
@@ -100,6 +100,16 @@ export async function getComponentDetails(db: Database, componentId: number) {
     return {
         ...component,
         details: details
+    };
+}
+
+export async function getDetailsForNewComponent(componentType: string) {
+    const config = typeConfigMap[componentType as ComponentType];
+
+    return {
+        type: componentType as ComponentType,
+        requiredFields: requiredFields[componentType as ComponentType] ?? [],
+        multiTables: config.multiTables ?? {},
     };
 }
 

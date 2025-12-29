@@ -107,25 +107,3 @@ export function validateComponentSpecificData(type: string, specificData: any): 
 
     return true;
 }
-
-export function getValidationError(type: string, specificData: any): string | null {
-    if (!(type in requiredFields)) {
-        return `Invalid component type: ${type}`;
-    }
-
-    const fields = requiredFields[type as ComponentType];
-    const missingFields: string[] = [];
-
-    for (const field of fields) {
-        const value = specificData[field];
-        if (value === undefined || value === null || value === '') {
-            missingFields.push(field);
-        }
-    }
-
-    if (missingFields.length > 0) {
-        return `Missing required fields: ${missingFields.join(', ')}`;
-    }
-
-    return null;
-}

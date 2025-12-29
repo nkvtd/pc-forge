@@ -62,3 +62,12 @@ export async function onCreateNewComponent({ name, brand, price, imgUrl, type, s
 
     return { success: true };
 }
+
+export async function onGetDetailsForNewComponent({ type }
+                                                  : { type: string }) {
+    const { c, userId } = await requireAdmin()
+
+    const details = await drizzleQueries.getDetailsForNewComponent(type);
+
+    return details;
+}
