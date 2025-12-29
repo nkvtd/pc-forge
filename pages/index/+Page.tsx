@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {
-    Container, Box, Typography, Button, Grid, IconButton, Dialog, DialogTitle, DialogContent
+    Container, Box, Typography, Button, IconButton, Dialog, DialogTitle, DialogContent
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
@@ -107,7 +107,8 @@ export default function HomePage() {
                             xl: 'repeat(5, 1fr)',
                         },
                         gap: 3,
-                        width: '90%',
+                        width: '100%',
+                        mb: 8
                     }}
                 >
                     {data.prebuilts.map((build: any) => (
@@ -123,8 +124,7 @@ export default function HomePage() {
                     mb: 2, mt: 2, borderLeft: '5px solid #ff8201', pl: 1,
                 }}>
                     <Typography variant="h4" fontWeight="bold" color="text.primary">Community Forge</Typography>
-                    <Typography variant="subtitle1" color="text.secondary" sx={{mb: 2}}>Fresh builds from users around
-                        the world.</Typography>
+                    <Typography variant="subtitle1" color="text.secondary" sx={{mb: 2}}>Fresh builds from users around the world.</Typography>
                 </Box>
                 <Box
                     sx={{
@@ -137,7 +137,7 @@ export default function HomePage() {
                             xl: 'repeat(5, 1fr)',
                         },
                         gap: 3,
-                        width: '90%',
+                        width: '100%',
                     }}
                 >
                     {data.communityBuilds.map((build: any) => (
@@ -162,44 +162,57 @@ export default function HomePage() {
                 onClone={handleCloneWrapper}
             />
 
-            <Dialog open={openRankedPopup} onClose={() => setOpenRankedPopup(false)} maxWidth="xl" fullWidth
-                    scroll="paper">
+            <Dialog open={openRankedPopup} onClose={() => setOpenRankedPopup(false)} maxWidth="xl" fullWidth scroll="paper">
                 <DialogTitle sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                     Hall of Fame (Top Rated)
                     <IconButton onClick={() => setOpenRankedPopup(false)}><CloseIcon/></IconButton>
                 </DialogTitle>
-                <DialogContent dividers>
-                    <Grid container spacing={3} sx={{p: 1}}>
+                <DialogContent dividers sx={{p: 3}}>
+                    <Box
+                        sx={{
+                            display: 'grid',
+                            gridTemplateColumns: {
+                                xs: '1fr',
+                                sm: 'repeat(2, 1fr)',
+                                md: 'repeat(3, 1fr)',
+                                lg: 'repeat(4, 1fr)',
+                                xl: 'repeat(5, 1fr)',
+                            },
+                            gap: 3,
+                            width: '100%'
+                        }}
+                    >
                         {allRanked.map((build: any, index: number) => (
-                            <Grid
-                                item
-                                xs={12}
-                                sm={6}
-                                md={3}
-                                key={`ranked-${build.id}`}
-                                sx={{display: 'flex'}}
-                            >
-                                <Box sx={{position: 'relative', width: '100%', display: 'flex'}}>
-                                    <Box sx={{
-                                        position: 'absolute', top: -10, left: -10, zIndex: 1,
-                                        width: 35, height: 35, borderRadius: '50%',
-                                        bgcolor: index < 3 ? '#ff8201' : 'grey.800', color: 'white',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        fontWeight: 'bold', border: '2px solid white', boxShadow: 2
-                                    }}>
-                                        #{index + 1}
-                                    </Box>
-                                    <BuildCard
-                                        build={build}
-                                        onClick={() => {
-                                            setOpenRankedPopup(false);
-                                            setSelectedBuildId(build.id);
-                                        }}
-                                    />
+                            <Box key={`ranked-${build.id}`} sx={{position: 'relative', width: '100%'}}>
+                                <Box sx={{
+                                    position: 'absolute',
+                                    top: -10,
+                                    left: -10,
+                                    zIndex: 1,
+                                    width: 35,
+                                    height: 35,
+                                    borderRadius: '50%',
+                                    bgcolor: index < 3 ? '#ff8201' : 'grey.800',
+                                    color: 'white',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontWeight: 'bold',
+                                    border: '2px solid white',
+                                    boxShadow: 2,
+                                }}>
+                                    #{index + 1}
                                 </Box>
-                            </Grid>
+                                <BuildCard
+                                    build={build}
+                                    onClick={() => {
+                                        setOpenRankedPopup(false);
+                                        setSelectedBuildId(build.id);
+                                    }}
+                                />
+                            </Box>
                         ))}
-                    </Grid>
+                    </Box>
                 </DialogContent>
             </Dialog>
         </Box>

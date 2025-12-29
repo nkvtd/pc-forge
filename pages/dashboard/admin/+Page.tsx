@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     Container, Grid, Paper, Typography, Box, Avatar, Divider, Button,
     CircularProgress, Table, TableBody, TableCell, TableHead, TableRow,
@@ -24,30 +24,73 @@ export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
     const [selectedBuildId, setSelectedBuildId] = useState<number | null>(null);
 
-    const [suggestionDialog, setSuggestionDialog] = useState<{ open: boolean, id: number | null, action: 'approved' | 'rejected' }>({ open: false, id: null, action: 'approved' });
+    // Build approval dialog state
+    const [buildApprovalDialog, setBuildApprovalDialog] = useState<{
+        open: boolean,
+        buildId: number | null,
+        buildName: string
+    }>({open: false, buildId: null, buildName: ''});
+    const [rejectReason, setRejectReason] = useState('');
+    const [approvalLoading, setApprovalLoading] = useState(false);
+
+    const [suggestionDialog, setSuggestionDialog] = useState<{
+        open: boolean,
+        id: number | null,
+        action: 'approved' | 'rejected'
+    }>({open: false, id: null, action: 'approved'});
     const [adminComment, setAdminComment] = useState("");
 
     const loadData = () => {
         getAdminInfoAndData()
-            .then(res => { setData(res); setLoading(false); })
+            .then(res => {
+                setData(res);
+                setLoading(false);
+            })
             .catch(err => {
                 console.error(err);
                 alert("Failed to load admin data. Are you an admin?");
             });
     };
 
-    useEffect(() => { loadData(); }, []);
+    useEffect(() => {
+        loadData();
+    }, []);
 
-    const handleBuildReview = async (buildId: number, isApproved: boolean) => {
-        if (!confirm(`Are you sure you want to ${isApproved ? 'APPROVE' : 'REJECT'} this build?`)) return;
+    const openBuildApproval = (buildId: number, buildName: string) => {
+        setBuildApprovalDialog({open: true, buildId, buildName});
+        setRejectReason('');
+    };
+
+    const handleApproveBuild = async () => {
+        if (!buildApprovalDialog.buildId) return;
+        setApprovalLoading(true);
         try {
-            await onSetBuildApprovalStatus({ buildId, isApproved });
+            await onSetBuildApprovalStatus({buildId: buildApprovalDialog.buildId, isApproved: true});
+            setBuildApprovalDialog({open: false, buildId: null, buildName: ''});
             loadData();
-        } catch (e) { alert("Action failed"); }
+        } catch (e) {
+            alert("Approve failed");
+        } finally {
+            setApprovalLoading(false);
+        }
+    };
+
+    const handleRejectBuild = async () => {
+        if (!buildApprovalDialog.buildId || !rejectReason.trim()) return;
+        setApprovalLoading(true);
+        try {
+            await onSetBuildApprovalStatus({buildId: buildApprovalDialog.buildId, isApproved: false});
+            setBuildApprovalDialog({open: false, buildId: null, buildName: ''});
+            loadData();
+        } catch (e) {
+            alert("Reject failed");
+        } finally {
+            setApprovalLoading(false);
+        }
     };
 
     const openSuggestionReview = (id: number, action: 'approved' | 'rejected') => {
-        setSuggestionDialog({ open: true, id, action });
+        setSuggestionDialog({open: true, id, action});
         setAdminComment(action === 'approved' ? "" : "");
     };
 
@@ -59,30 +102,39 @@ export default function AdminDashboard() {
                 status: suggestionDialog.action,
                 adminComment: adminComment
             });
-            // console.error("Test za admincomment: ", adminComment);
-            setSuggestionDialog({ ...suggestionDialog, open: false });
+            setSuggestionDialog({...suggestionDialog, open: false});
             loadData();
-        } catch (e) { alert("Failed to update suggestion"); }
+        } catch (e) {
+            alert("Failed to update suggestion");
+        }
     };
 
-    if (loading) return <Box sx={{ p: 5, textAlign: 'center' }}><CircularProgress /></Box>;
-    if (!data) return <Box sx={{ p: 5, textAlign: 'center' }}>Access Denied</Box>;
+    if (loading) return <Box sx={{p: 5, textAlign: 'center'}}><CircularProgress/></Box>;
+    if (!data) return <Box sx={{p: 5, textAlign: 'center'}}>Access Denied</Box>;
 
     return (
-        <Container maxWidth="xl" sx={{ mt: 4, mb: 10 }}>
+        <Container maxWidth="xl" sx={{mt: 4, mb: 10}}>
             <Grid container spacing={4}>
                 <Grid item xs={12} md={3}>
-                    <Paper elevation={3} sx={{ p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', bgcolor: '#1e1e1e', color: 'white' }}>
-                        <Avatar sx={{ width: 120, height: 120, mb: 2, bgcolor: 'error.main' }}>
-                            <AdminPanelSettingsIcon sx={{ fontSize: 70 }} />
+                    <Paper elevation={3} sx={{
+                        p: 4,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        height: '100%',
+                        bgcolor: '#1e1e1e',
+                        color: 'white'
+                    }}>
+                        <Avatar sx={{width: 120, height: 120, mb: 2, bgcolor: 'error.main'}}>
+                            <AdminPanelSettingsIcon sx={{fontSize: 70}}/>
                         </Avatar>
                         <Typography variant="h5" fontWeight="bold">{data.admin.username}</Typography>
-                        <Typography variant="body2" sx={{ opacity: 0.7, mb: 3 }}>{data.admin.email}</Typography>
+                        <Typography variant="body2" sx={{opacity: 0.7, mb: 3}}>{data.admin.email}</Typography>
 
-                        <Chip label="ADMINISTRATOR" color="error" variant="outlined" sx={{ fontWeight: 'bold' }} />
-                        <Divider sx={{ width: '100%', my: 3, bgcolor: 'rgba(255,255,255,0.1)' }} />
+                        <Chip label="ADMINISTRATOR" color="error" variant="outlined" sx={{fontWeight: 'bold'}}/>
+                        <Divider sx={{width: '100%', my: 3, bgcolor: 'rgba(255,255,255,0.1)'}}/>
 
-                        <Box sx={{ width: '100%', textAlign: 'center' }}>
+                        <Box sx={{width: '100%', textAlign: 'center'}}>
                             <Typography variant="h3" fontWeight="bold" color="primary.main">
                                 {data.pendingBuilds?.length || 0}
                             </Typography>
@@ -94,9 +146,9 @@ export default function AdminDashboard() {
                 <Grid item xs={12} md={9}>
                     <Grid container spacing={4} direction="column">
                         <Grid item xs={12}>
-                            <Paper sx={{ p: 3, borderLeft: '6px solid #9c27b0' }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                    <MemoryIcon color="secondary" sx={{ mr: 1 }} />
+                            <Paper sx={{p: 3, borderLeft: '6px solid #9c27b0'}}>
+                                <Box sx={{display: 'flex', alignItems: 'center', mb: 2}}>
+                                    <MemoryIcon color="secondary" sx={{mr: 1}}/>
                                     <Typography variant="h6" fontWeight="bold">
                                         Suggested Components ({data.componentSuggestions?.length || 0})
                                     </Typography>
@@ -117,19 +169,22 @@ export default function AdminDashboard() {
                                         <TableBody>
                                             {data.componentSuggestions.map((sug: any) => (
                                                 <TableRow key={sug.id}>
-                                                    <TableCell sx={{ maxWidth: 300 }}>
-                                                        <a href={sug.link} title={sug.link} style={{textDecoration: 'none', color: 'inherit'}}>
+                                                    <TableCell sx={{maxWidth: 300}}>
+                                                        <a href={sug.link} title={sug.link}
+                                                           style={{textDecoration: 'none', color: 'inherit'}}>
                                                             {sug.description || sug.link}
                                                         </a>
                                                     </TableCell>
                                                     <TableCell>{sug.componentType.toUpperCase()}</TableCell>
                                                     <TableCell>{sug.userId}</TableCell>
                                                     <TableCell align="right">
-                                                        <IconButton size="small" color="success" onClick={() => openSuggestionReview(sug.id, 'approved')}>
-                                                            <CheckCircleIcon />
+                                                        <IconButton size="small" color="success"
+                                                                    onClick={() => openSuggestionReview(sug.id, 'approved')}>
+                                                            <CheckCircleIcon/>
                                                         </IconButton>
-                                                        <IconButton size="small" color="error" onClick={() => openSuggestionReview(sug.id, 'rejected')}>
-                                                            <CancelIcon />
+                                                        <IconButton size="small" color="error"
+                                                                    onClick={() => openSuggestionReview(sug.id, 'rejected')}>
+                                                            <CancelIcon/>
                                                         </IconButton>
                                                     </TableCell>
                                                 </TableRow>
@@ -141,9 +196,9 @@ export default function AdminDashboard() {
                         </Grid>
 
                         <Grid item xs={12}>
-                            <Paper sx={{ p: 3, borderLeft: '6px solid #ed6c02', bgcolor: '#121212' }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                    <BuildIcon color="warning" sx={{ mr: 1 }} />
+                            <Paper sx={{p: 3, borderLeft: '6px solid #ed6c02', bgcolor: '#121212'}}>
+                                <Box sx={{display: 'flex', alignItems: 'center', mb: 2}}>
+                                    <BuildIcon color="warning" sx={{mr: 1}}/>
                                     <Typography variant="h6" fontWeight="bold">
                                         Builds Waiting for Approval ({data.pendingBuilds?.length || 0})
                                     </Typography>
@@ -155,20 +210,28 @@ export default function AdminDashboard() {
                                     <Grid container spacing={2}>
                                         {data.pendingBuilds.map((build: any) => (
                                             <Grid item xs={12} md={4} key={build.id}>
-                                                <Box sx={{ position: 'relative' }}>
+                                                <Box sx={{position: 'relative'}}>
                                                     <BuildCard
                                                         build={build}
                                                         onClick={() => setSelectedBuildId(build.id)}
                                                     />
                                                     <Box sx={{
-                                                        mt: 1, display: 'flex', gap: 1,
-                                                        justifyContent: 'center', bgcolor: '#121212', p: 1, borderRadius: 1
+                                                        mt: 1,
+                                                        display: 'flex',
+                                                        gap: 1,
+                                                        justifyContent: 'center',
+                                                        bgcolor: '#292929',
+                                                        p: 1,
+                                                        borderRadius: 1
                                                     }}>
-                                                        <Button variant="contained" color="success" size="small" onClick={() => handleBuildReview(build.id, true)}>
-                                                            Approve
-                                                        </Button>
-                                                        <Button variant="contained" color="error" size="small" onClick={() => handleBuildReview(build.id, false)}>
-                                                            Reject
+                                                        <Button
+                                                            variant="contained"
+                                                            color="warning"
+                                                            size="small"
+                                                            startIcon={<BuildIcon/>}
+                                                            onClick={() => openBuildApproval(build.id, build.name)}
+                                                        >
+                                                            Review
                                                         </Button>
                                                     </Box>
                                                 </Box>
@@ -180,7 +243,7 @@ export default function AdminDashboard() {
                         </Grid>
 
                         <Grid item xs={12}>
-                            <Paper sx={{ p: 3, borderLeft: '6px solid #2e7d32' }}>
+                            <Paper sx={{p: 3, borderLeft: '6px solid #2e7d32'}}>
                                 <Typography variant="h6" fontWeight="bold" gutterBottom>
                                     My Builds / Sandbox
                                 </Typography>
@@ -200,12 +263,12 @@ export default function AdminDashboard() {
                                 )}
                             </Paper>
                         </Grid>
-
                     </Grid>
                 </Grid>
             </Grid>
 
-            <Dialog open={suggestionDialog.open} onClose={() => setSuggestionDialog({...suggestionDialog, open: false})}>
+            <Dialog open={suggestionDialog.open}
+                    onClose={() => setSuggestionDialog({...suggestionDialog, open: false})}>
                 <DialogTitle>Review Component Suggestion</DialogTitle>
                 <DialogContent>
                     <Typography gutterBottom>Status: <b>{suggestionDialog.action.toUpperCase()}</b></Typography>
@@ -217,6 +280,51 @@ export default function AdminDashboard() {
                 <DialogActions>
                     <Button onClick={() => setSuggestionDialog({...suggestionDialog, open: false})}>Cancel</Button>
                     <Button variant="contained" onClick={submitSuggestionReview}>Submit</Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog open={buildApprovalDialog.open}
+                    onClose={() => setBuildApprovalDialog({open: false, buildId: null, buildName: ''})}>
+                <DialogTitle>Review Build</DialogTitle>
+                <DialogContent>
+                    <Typography variant="h6" gutterBottom>{buildApprovalDialog.buildName}</Typography>
+                    <Typography color="text.secondary" sx={{mb: 2}}>
+                        Build ID: {buildApprovalDialog.buildId}
+                    </Typography>
+                    <TextField
+                        fullWidth
+                        multiline
+                        rows={2}
+                        label="Reject reason (optional)"
+                        value={rejectReason}
+                        onChange={(e) => setRejectReason(e.target.value)}
+                        placeholder="Why reject this build?"
+                        sx={{mt: 1}}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={() => setBuildApprovalDialog({open: false, buildId: null, buildName: ''})}
+                        disabled={approvalLoading}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={handleRejectBuild}
+                        variant="outlined"
+                        color="error"
+                        disabled={approvalLoading || !rejectReason.trim()}
+                    >
+                        {approvalLoading ? <CircularProgress size={20}/> : 'Reject'}
+                    </Button>
+                    <Button
+                        onClick={handleApproveBuild}
+                        variant="contained"
+                        color="success"
+                        disabled={approvalLoading}
+                    >
+                        {approvalLoading ? <CircularProgress size={20}/> : 'Approve'}
+                    </Button>
                 </DialogActions>
             </Dialog>
 
