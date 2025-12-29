@@ -521,36 +521,39 @@ export async function saveBuildState(db: Database, userId: number, buildId: numb
 }
 
 export async function getBuildState(db: Database, userId: number, buildId: number) {
-    const [build] = await db
-        .select({
-            id: buildsTable.id,
-            userId: buildsTable.userId,
-            isApproved: buildsTable.isApproved,
-            name: buildsTable.name,
-            description: buildsTable.description,
-            totalPrice: buildsTable.totalPrice,
-        })
-        .from(buildsTable)
-        .where(
-            and(
-                eq(buildsTable.id, buildId),
-                eq(buildsTable.userId, userId)
-            )
-        )
-        .limit(1);
-
-    if (!build || build.isApproved) return null;
-
-    const components = await db
-        .select({ componentId: buildComponentsTable.componentId
+    return db.transaction(async (tx) => {
+        const [build] = await tx
+            .select({
+                id: buildsTable.id,
+                userId: buildsTable.userId,
+                isApproved: buildsTable.isApproved,
+                name: buildsTable.name,
+                description: buildsTable.description,
+                totalPrice: buildsTable.totalPrice,
             })
-        .from(buildComponentsTable)
-        .where(
-            eq(buildComponentsTable.buildId, buildId)
-        );
+            .from(buildsTable)
+            .where(
+                and(
+                    eq(buildsTable.id, buildId),
+                    eq(buildsTable.userId, userId)
+                )
+            )
+            .limit(1);
 
-    return {
-        build,
-        componentIds: components.map(c => c.componentId)
-    };
+        if (!build || build.isApproved) return null;
+
+        const components = await tx
+            .select({
+                componentId: buildComponentsTable.componentId
+            })
+            .from(buildComponentsTable)
+            .where(
+                eq(buildComponentsTable.buildId, buildId)
+            );
+
+        return {
+            build,
+            componentIds: components.map(c => c.componentId)
+        };
+    });
 }
