@@ -130,7 +130,10 @@ export default function ForgePage() {
         try {
             let id = buildId;
             if (!id) {
-                const result = await onAddNewBuild({name: "Draft Build", description: "Work in progress"});
+                const result = await onAddNewBuild({
+                    name: buildName.trim() || "New Build",
+                    description: description || "Work in progress"
+                });
                 id = typeof result === 'number' ? result : (result as any)?.buildId;
                 if (!id || !Number.isInteger(id) || id <= 0) {
                     alert("Failed to create draft build.");
@@ -149,12 +152,12 @@ export default function ForgePage() {
 
             await onAddComponentToBuild({buildId: id, componentId: component.id});
         } catch (e) {
-            // console.error("Failed to add component to server build", e);
             alert("Failed to add component. Please try again.");
         } finally {
             setActiveSlotId(null);
         }
     };
+
 
     const handleRemovePart = async (slotId: string) => {
         const slot = slots.find(s => s.id === slotId);
