@@ -16,6 +16,7 @@ import {
     DialogActions
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import PersonIcon from '@mui/icons-material/Person';
 import ComputerIcon from '@mui/icons-material/Computer';
@@ -37,11 +38,11 @@ export default function UserDashboard() {
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
     const [openMyBuildsDialog, setOpenMyBuildsDialog] = useState(false);
     const [openFavoritesDialog, setOpenFavoritesDialog] = useState(false);
-
     const [selectedBuildId, setSelectedBuildId] = useState<number | null>(null);
+    const [deleteDialog, setDeleteDialog] = useState<{ open: boolean, buildId: number | null, buildName: string }>({ open: false, buildId: null, buildName: '' });
+    const [deleteLoading, setDeleteLoading] = useState(false);
 
     const loadData = () => {
         getUserInfoAndData()
@@ -60,14 +61,22 @@ export default function UserDashboard() {
         loadData();
     }, []);
 
-    const handleDelete = async (buildId: number) => {
-        if (!confirm("Are you sure you want to delete this build?")) return;
+    const openDeleteDialog = (buildId: number, buildName: string) => {
+        setDeleteDialog({ open: true, buildId, buildName });
+    };
+
+    const handleDelete = async () => {
+        if (!deleteDialog.buildId) return;
+        setDeleteLoading(true);
         try {
-            await onDeleteBuild({buildId});
-            loadData();
+            await onDeleteBuild({buildId: deleteDialog.buildId});
+            setDeleteDialog({ open: false, buildId: null, buildName: '' });
+            loadData(); // refresh na user i favorite builds
             setSelectedBuildId(null);
         } catch (e) {
             alert("Failed to delete build");
+        } finally {
+            setDeleteLoading(false);
         }
     };
 
@@ -85,7 +94,6 @@ export default function UserDashboard() {
     if (error || !data) return <Container sx={{mt: 5, textAlign: 'center'}}><Typography color="error"
                                                                                         variant="h6">{error}</Typography><Button
         href="/auth/login" variant="contained">Login</Button></Container>;
-    // console.log("Current User ID passed to dialog:", data?.user?.id);
 
     return (
         <Container maxWidth="xl" sx={{mt: 4, mb: 4, color: 'white'}}>
@@ -149,7 +157,6 @@ export default function UserDashboard() {
 
                         <Grid item xs={12}>
                             <Paper elevation={3} sx={{p: 3, minHeight: '300px', bgcolor: '#1e1e1e'}}>
-
                                 <Box sx={{
                                     display: 'flex',
                                     alignItems: 'center',
@@ -184,10 +191,27 @@ export default function UserDashboard() {
                                     <Grid container spacing={2}>
                                         {data.userBuilds.slice(0, 4).map((build: any) => (
                                             <Grid item xs={12} sm={6} md={4} key={build.id}>
-                                                <BuildCard
-                                                    build={build}
-                                                    onClick={() => setSelectedBuildId(build.id)}
-                                                />
+                                                <Box sx={{ position: 'relative' }}>
+                                                    <BuildCard
+                                                        build={build}
+                                                        onClick={() => setSelectedBuildId(build.id)}
+                                                    />
+                                                    <Box sx={{ mt: 1, display: 'flex', justifyContent: 'center' }}>
+                                                        <Button
+                                                            variant="outlined"
+                                                            color="error"
+                                                            size="small"
+                                                            startIcon={<DeleteIcon />}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                openDeleteDialog(build.id, build.name);
+                                                            }}
+                                                            sx={{ width: '100%' }}
+                                                        >
+                                                            Delete
+                                                        </Button>
+                                                    </Box>
+                                                </Box>
                                             </Grid>
                                         ))}
                                     </Grid>
@@ -207,13 +231,30 @@ export default function UserDashboard() {
                                 <Grid container spacing={2} sx={{mt: 1}}>
                                     {data.userBuilds.map((build: any) => (
                                         <Grid item xs={12} sm={6} md={4} key={build.id}>
-                                            <BuildCard
-                                                build={build}
-                                                onClick={() => {
-                                                    setOpenMyBuildsDialog(false);
-                                                    setSelectedBuildId(build.id);
-                                                }}
-                                            />
+                                            <Box sx={{ position: 'relative' }}>
+                                                <BuildCard
+                                                    build={build}
+                                                    onClick={() => {
+                                                        setOpenMyBuildsDialog(false);
+                                                        setSelectedBuildId(build.id);
+                                                    }}
+                                                />
+                                                <Box sx={{ mt: 1, display: 'flex', justifyContent: 'center' }}>
+                                                    <Button
+                                                        variant="outlined"
+                                                        color="error"
+                                                        size="small"
+                                                        startIcon={<DeleteIcon />}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            openDeleteDialog(build.id, build.name);
+                                                        }}
+                                                        sx={{ width: '100%' }}
+                                                    >
+                                                        Delete
+                                                    </Button>
+                                                </Box>
+                                            </Box>
                                         </Grid>
                                     ))}
                                 </Grid>
@@ -251,6 +292,33 @@ export default function UserDashboard() {
                             </DialogActions>
                         </Dialog>
 
+                        <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ open: false, buildId: null, buildName: '' })}>
+                            <DialogTitle>Delete Build</DialogTitle>
+                            <DialogContent>
+                                <Typography variant="h6" gutterBottom>{deleteDialog.buildName}</Typography>
+                                <Typography color="text.secondary">
+                                    Are you sure you want to permanently delete this build? This action cannot be undone.
+                                </Typography>
+                            </DialogContent>
+                            <DialogActions>
+                                <Button
+                                    onClick={() => setDeleteDialog({ open: false, buildId: null, buildName: '' })}
+                                    disabled={deleteLoading}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    onClick={handleDelete}
+                                    variant="contained"
+                                    color="error"
+                                    disabled={deleteLoading}
+                                    startIcon={deleteLoading ? <CircularProgress size={20} /> : <DeleteIcon />}
+                                >
+                                    {deleteLoading ? 'Deleting...' : 'Delete Build'}
+                                </Button>
+                            </DialogActions>
+                        </Dialog>
+
                     </Grid>
                 </Grid>
             </Grid>
@@ -264,6 +332,7 @@ export default function UserDashboard() {
                     loadData();
                 }}
                 onClone={handleCloneWrapper}
+                isDashboardView={true}
             />
         </Container>
     );
