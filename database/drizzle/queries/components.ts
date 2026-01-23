@@ -958,19 +958,6 @@ export async function addComponentToBuild(db: Database, userId: number, buildId:
 
         if(!build || build.isApproved) return null;
 
-        const existing = await tx
-            .select()
-            .from(buildComponentsTable)
-            .where(
-                and(
-                    eq(buildComponentsTable.buildId, buildId),
-                    eq(buildComponentsTable.componentId, componentId)
-                )
-            )
-            .limit(1);
-
-        if (existing.length) return null;
-
         await tx
             .insert(buildComponentsTable)
             .values({

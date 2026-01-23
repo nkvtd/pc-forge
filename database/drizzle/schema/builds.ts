@@ -16,6 +16,7 @@ export const buildsTable = pgTable("build", {
 });
 
 export const buildComponentsTable = pgTable("build_component", {
+        id: serial("id").primaryKey(),
         buildId: integer("build_id")
             .notNull()
             .references(() => buildsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
@@ -23,9 +24,6 @@ export const buildComponentsTable = pgTable("build_component", {
             .notNull()
             .references(() => componentsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
     },
-    (t) => ({
-        pk: primaryKey({ columns: [t.buildId, t.componentId] }),
-    }),
 );
 
 export const favoriteBuildsTable = pgTable("favorite_build", {
