@@ -50,6 +50,11 @@ export default function AdminDashboard() {
     }>({open: false, id: null, action: 'approved'});
     const [adminComment, setAdminComment] = useState("");
 
+    const [createComponentDialog, setCreateComponentDialog] = useState<{
+        open: boolean;
+        suggestion: any | null;
+    }>({open: false, suggestion: null});
+
     const loadData = () => {
         setLoading(true);
         getAdminInfoAndData()
@@ -142,8 +147,15 @@ export default function AdminDashboard() {
 
     if (loading) {
         return (
-            <Container maxWidth="xl" sx={{mt: 4, mb: 10, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh'}}>
-                <CircularProgress />
+            <Container maxWidth="xl" sx={{
+                mt: 4,
+                mb: 10,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                minHeight: '50vh'
+            }}>
+                <CircularProgress/>
             </Container>
         );
     }
@@ -195,9 +207,9 @@ export default function AdminDashboard() {
                                 color="warning"
                                 size="large"
                                 fullWidth
-                                startIcon={<BuildIcon />}
+                                startIcon={<BuildIcon/>}
                                 onClick={() => setAddDialogOpen(true)}
-                                sx={{ mb: 2 }}
+                                sx={{mb: 2}}
                             >
                                 Add Component
                             </Button>
@@ -212,12 +224,12 @@ export default function AdminDashboard() {
                                 <Box sx={{display: 'flex', alignItems: 'center', mb: 2}}>
                                     <MemoryIcon color="secondary" sx={{mr: 1}}/>
                                     <Typography variant="h6" fontWeight="bold">
-                                        Suggested Components ({data.componentSuggestions?.length || 0})
+                                        Component Suggestions ({data.componentSuggestions?.length || 0})
                                     </Typography>
                                 </Box>
 
                                 {data.componentSuggestions?.length === 0 ? (
-                                    <Typography color="text.secondary">No pending suggestions.</Typography>
+                                    <Typography color="text.secondary">No suggestions.</Typography>
                                 ) : (
                                     <Table size="small">
                                         <TableHead>
@@ -225,6 +237,7 @@ export default function AdminDashboard() {
                                                 <TableCell>Link/Description</TableCell>
                                                 <TableCell>Type</TableCell>
                                                 <TableCell>User</TableCell>
+                                                <TableCell>Status</TableCell>
                                                 <TableCell align="right">Actions</TableCell>
                                             </TableRow>
                                         </TableHead>
@@ -244,21 +257,53 @@ export default function AdminDashboard() {
                                                     </TableCell>
                                                     <TableCell>{sug.componentType?.toUpperCase()}</TableCell>
                                                     <TableCell>{sug.userId}</TableCell>
+                                                    <TableCell>
+                                                        <Chip
+                                                            label={sug.status || 'pending'}
+                                                            size="small"
+                                                            color={
+                                                                sug.status === 'approved' ? 'success' :
+                                                                    sug.status === 'rejected' ? 'error' :
+                                                                        'default'
+                                                            }
+                                                        />
+                                                    </TableCell>
                                                     <TableCell align="right">
-                                                        <IconButton
-                                                            size="small"
-                                                            color="success"
-                                                            onClick={() => openSuggestionReview(sug.id, 'approved')}
-                                                        >
-                                                            <CheckCircleIcon/>
-                                                        </IconButton>
-                                                        <IconButton
-                                                            size="small"
-                                                            color="error"
-                                                            onClick={() => openSuggestionReview(sug.id, 'rejected')}
-                                                        >
-                                                            <CancelIcon/>
-                                                        </IconButton>
+                                                        {sug.status === 'pending' ? (
+                                                            <>
+                                                                <IconButton
+                                                                    size="small"
+                                                                    color="success"
+                                                                    onClick={() => openSuggestionReview(sug.id, 'approved')}
+                                                                >
+                                                                    <CheckCircleIcon/>
+                                                                </IconButton>
+                                                                <IconButton
+                                                                    size="small"
+                                                                    color="error"
+                                                                    onClick={() => openSuggestionReview(sug.id, 'rejected')}
+                                                                >
+                                                                    <CancelIcon/>
+                                                                </IconButton>
+                                                            </>
+                                                        ) : sug.status === 'approved' ? (
+                                                            <Button
+                                                                size="small"
+                                                                variant="contained"
+                                                                color="warning"
+                                                                startIcon={<AddIcon/>}
+                                                                onClick={() => setCreateComponentDialog({
+                                                                    open: true,
+                                                                    suggestion: sug
+                                                                })}
+                                                            >
+                                                                Create
+                                                            </Button>
+                                                        ) : (
+                                                            <Typography variant="caption" color="text.secondary">
+                                                                {sug.adminComment || 'Rejected'}
+                                                            </Typography>
+                                                        )}
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
@@ -298,7 +343,7 @@ export default function AdminDashboard() {
                                                             variant="contained"
                                                             color="warning"
                                                             size="small"
-                                                            startIcon={<BuildIcon />}
+                                                            startIcon={<BuildIcon/>}
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 openBuildApproval(build.id, build.name);
@@ -336,7 +381,7 @@ export default function AdminDashboard() {
                                                             variant="outlined"
                                                             color="error"
                                                             size="small"
-                                                            startIcon={<DeleteIcon />}
+                                                            startIcon={<DeleteIcon/>}
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 openDeleteDialog(build.id, build.name);
@@ -357,7 +402,8 @@ export default function AdminDashboard() {
                 </Grid>
             </Grid>
 
-            <Dialog open={suggestionDialog.open} onClose={() => setSuggestionDialog({...suggestionDialog, open: false})}>
+            <Dialog open={suggestionDialog.open}
+                    onClose={() => setSuggestionDialog({...suggestionDialog, open: false})}>
                 <DialogTitle>Review Component Suggestion</DialogTitle>
                 <DialogContent>
                     <Typography gutterBottom>Status: <b>{suggestionDialog.action.toUpperCase()}</b></Typography>
@@ -368,7 +414,7 @@ export default function AdminDashboard() {
                         rows={3}
                         value={adminComment}
                         onChange={(e) => setAdminComment(e.target.value)}
-                        sx={{ mt: 2 }}
+                        sx={{mt: 2}}
                     />
                 </DialogContent>
                 <DialogActions>
@@ -447,7 +493,7 @@ export default function AdminDashboard() {
                         variant="contained"
                         color="error"
                         disabled={deleteLoading}
-                        startIcon={deleteLoading ? <CircularProgress size={20}/> : <DeleteIcon />}
+                        startIcon={deleteLoading ? <CircularProgress size={20}/> : <DeleteIcon/>}
                     >
                         {deleteLoading ? 'Deleting...' : 'Delete Build'}
                     </Button>
@@ -469,6 +515,20 @@ export default function AdminDashboard() {
                     loadData();
                     setAddDialogOpen(false);
                 }}
+            />
+
+            <AddComponentDialog
+                open={createComponentDialog.open}
+                onClose={() => setCreateComponentDialog({ open: false, suggestion: null })}
+                onSuccess={() => {
+                    loadData();
+                    setCreateComponentDialog({ open: false, suggestion: null });
+                }}
+                prefillData={createComponentDialog.suggestion ? {
+                    type: createComponentDialog.suggestion.componentType,
+                    suggestionLink: createComponentDialog.suggestion.link,
+                    suggestionDescription: createComponentDialog.suggestion.description
+                } : undefined}
             />
         </Container>
     );

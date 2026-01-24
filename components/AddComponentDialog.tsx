@@ -19,10 +19,15 @@ const COMPONENT_TYPES = [
     { value: 'cooler', label: 'CPU Cooler' },
 ];
 
-export default function AddComponentDialog({ open, onClose, onSuccess }: {
+export default function AddComponentDialog({ open, onClose, onSuccess, prefillData }: {
     open: boolean;
     onClose: () => void;
     onSuccess: () => void;
+    prefillData?: {
+        type?: string;
+        suggestionLink?: string;
+        suggestionDescription?: string;
+    };
 }) {
     const [name, setName] = useState('');
     const [brand, setBrand] = useState('');
@@ -67,6 +72,12 @@ export default function AddComponentDialog({ open, onClose, onSuccess }: {
                 .finally(() => setLoading(false));
         }
     }, [type]);
+
+    useEffect(() => {
+        if (open && prefillData) {
+            if (prefillData.type) setType(prefillData.type);
+        }
+    }, [open, prefillData]);
 
     const handleFieldChange = (fieldName: string, value: any) => {
         setSpecificData((prev: any) => ({

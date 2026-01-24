@@ -6,9 +6,30 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
+import IconButton from "@mui/material/IconButton";
+import Drawer from "@mui/material/Drawer";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import Divider from "@mui/material/Divider";
+import Collapse from "@mui/material/Collapse";
+
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
+import BuildIcon from '@mui/icons-material/Build';
+import ViewListIcon from '@mui/icons-material/ViewList';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import PersonIcon from '@mui/icons-material/Person';
+import LogoutIcon from '@mui/icons-material/Logout';
+import LoginIcon from '@mui/icons-material/Login';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+
 import {
-    Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, ListItemText
+    Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions
 } from "@mui/material";
 
 import MemoryIcon from '@mui/icons-material/Memory';
@@ -38,8 +59,6 @@ const COMPONENT_CATEGORIES = [
     { id: 'case', label: 'Cases', icon: <StorageIcon fontSize="small" /> },
     { id: 'power_supply', label: 'Power Supplies', icon: <StorageIcon fontSize="small" /> },
     { id: 'cooler', label: 'Cooling', icon: <StorageIcon fontSize="small" /> },
-
-    // Peripherals / Accessories (Missing ones)
     { id: 'network_adapter', label: 'Network Adapters (WiFi)', icon: <RouterIcon fontSize="small" /> },
     { id: 'network_card', label: 'Network Cards (Ethernet)', icon: <LanIcon fontSize="small" /> },
     { id: 'sound_card', label: 'Sound Cards', icon: <SpeakerIcon fontSize="small" /> },
@@ -48,10 +67,11 @@ const COMPONENT_CATEGORIES = [
     { id: 'cables', label: 'Cables', icon: <CableIcon fontSize="small" /> },
 ];
 
-
 export default function Navbar() {
     const [auth, setAuth] = useState<AuthState | null>(null);
     const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
+    const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+    const [mobileComponentsOpen, setMobileComponentsOpen] = useState(false);
 
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const openMenu = Boolean(anchorEl);
@@ -71,11 +91,14 @@ export default function Navbar() {
         setSelectedCategory(categoryId);
         setBrowserOpen(true);
         handleMenuClose();
+        setMobileDrawerOpen(false);
+        setMobileComponentsOpen(false);
     };
 
     const handleLogoutClick = (e: React.MouseEvent) => {
         e.preventDefault();
         setOpenLogoutDialog(true);
+        setMobileDrawerOpen(false);
     };
 
     const confirmLogout = async () => {
@@ -113,9 +136,25 @@ export default function Navbar() {
         <>
             <AppBar position="static" color="default" enableColorOnDark>
                 <Toolbar>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mr: 4 }}>
-                        <Box component="img" src={LogoUrl} alt="PC Forge Logo" sx={{ height: 40, mr: 2, cursor: 'pointer' }} onClick={() => window.location.href='/'} />
-                        <Typography variant="h6" component="a" href="/" sx={{ textDecoration: "none", color: "inherit", fontWeight: "bold" }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mr: { xs: 1, md: 4 } }}>
+                        <Box
+                            component="img"
+                            src={LogoUrl}
+                            alt="PC Forge Logo"
+                            sx={{ height: 40, mr: { xs: 1, md: 2 }, cursor: 'pointer' }}
+                            onClick={() => window.location.href='/'}
+                        />
+                        <Typography
+                            variant="h6"
+                            component="a"
+                            href="/"
+                            sx={{
+                                textDecoration: "none",
+                                color: "inherit",
+                                fontWeight: "bold",
+                                display: { xs: 'none', sm: 'block' }
+                            }}
+                        >
                             PC Forge
                         </Typography>
                     </Box>
@@ -139,7 +178,7 @@ export default function Navbar() {
                         >
                             {COMPONENT_CATEGORIES.map((cat) => (
                                 <MenuItem key={cat.id} onClick={() => handleCategorySelect(cat.id)}>
-                                    {/*<ListItemIcon>{cat.icon}</ListItemIcon>*/}
+                                    <ListItemIcon>{cat.icon}</ListItemIcon>
                                     <ListItemText>{cat.label}</ListItemText>
                                 </MenuItem>
                             ))}
@@ -150,7 +189,7 @@ export default function Navbar() {
 
                     <Box sx={{ flexGrow: 1 }} />
 
-                    <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
                         {auth?.isLoggedIn ? (
                             <>
                                 <Button sx={onHoverNav} color="inherit" href={checkDashboardUrl}>{auth.username}</Button>
@@ -158,13 +197,112 @@ export default function Navbar() {
                             </>
                         ) : (
                             <>
-                                <Button color="inherit" href="/auth/login">Login</Button>
-                                <Button color="inherit" href="/auth/register">Register</Button>
+                                <Button color="inherit" href="/auth/login" sx={onHoverNav}>Login</Button>
+                                <Button color="inherit" href="/auth/register" sx={onHoverNav}>Register</Button>
                             </>
                         )}
                     </Box>
+
+                    <IconButton
+                        color="inherit"
+                        edge="end"
+                        onClick={() => setMobileDrawerOpen(true)}
+                        sx={{ display: { xs: 'block', md: 'none' } }}
+                    >
+                        <MenuIcon />
+                    </IconButton>
                 </Toolbar>
             </AppBar>
+
+            <Drawer
+                anchor="right"
+                open={mobileDrawerOpen}
+                onClose={() => setMobileDrawerOpen(false)}
+                sx={{
+                    display: { xs: 'block', md: 'none' },
+                    '& .MuiDrawer-paper': { width: 280 , height: '60%'}
+                }}
+            >
+                <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="h6" fontWeight="bold">Menu</Typography>
+                    <IconButton onClick={() => setMobileDrawerOpen(false)}>
+                        <CloseIcon />
+                    </IconButton>
+                </Box>
+                <Divider />
+
+                <List>
+                    <ListItem disablePadding>
+                        <ListItemButton onClick={() => { window.location.href = '/forge'; }}>
+                            <ListItemIcon><BuildIcon /></ListItemIcon>
+                            <ListItemText primary="Forge" />
+                        </ListItemButton>
+                    </ListItem>
+
+                    <ListItem disablePadding>
+                        <ListItemButton onClick={() => setMobileComponentsOpen(!mobileComponentsOpen)}>
+                            <ListItemIcon><ViewListIcon /></ListItemIcon>
+                            <ListItemText primary="Components" />
+                            {mobileComponentsOpen ? <ExpandLess /> : <ExpandMore />}
+                        </ListItemButton>
+                    </ListItem>
+                    <Collapse in={mobileComponentsOpen} timeout="auto" unmountOnExit>
+                        <List component="div" disablePadding>
+                            {COMPONENT_CATEGORIES.map((cat) => (
+                                <ListItemButton
+                                    key={cat.id}
+                                    sx={{ pl: 4 }}
+                                    onClick={() => handleCategorySelect(cat.id)}
+                                >
+                                    <ListItemIcon>{cat.icon}</ListItemIcon>
+                                    <ListItemText primary={cat.label} />
+                                </ListItemButton>
+                            ))}
+                        </List>
+                    </Collapse>
+
+                    <ListItem disablePadding>
+                        <ListItemButton onClick={() => { window.location.href = '/completed-builds'; }}>
+                            <ListItemIcon><ViewListIcon /></ListItemIcon>
+                            <ListItemText primary="Completed Builds" />
+                        </ListItemButton>
+                    </ListItem>
+
+                    <Divider sx={{ my: 1 }} />
+
+                    {auth?.isLoggedIn ? (
+                        <>
+                            <ListItem disablePadding>
+                                <ListItemButton onClick={() => { window.location.href = checkDashboardUrl; }}>
+                                    <ListItemIcon><PersonIcon /></ListItemIcon>
+                                    <ListItemText primary={"My Profile"} />
+                                </ListItemButton>
+                            </ListItem>
+                            <ListItem disablePadding>
+                                <ListItemButton onClick={handleLogoutClick}>
+                                    <ListItemIcon><LogoutIcon /></ListItemIcon>
+                                    <ListItemText primary="Logout" />
+                                </ListItemButton>
+                            </ListItem>
+                        </>
+                    ) : (
+                        <>
+                            <ListItem disablePadding>
+                                <ListItemButton onClick={() => { window.location.href = '/auth/login'; }}>
+                                    <ListItemIcon><LoginIcon /></ListItemIcon>
+                                    <ListItemText primary="Login" />
+                                </ListItemButton>
+                            </ListItem>
+                            <ListItem disablePadding>
+                                <ListItemButton onClick={() => { window.location.href = '/auth/register'; }}>
+                                    <ListItemIcon><PersonAddIcon /></ListItemIcon>
+                                    <ListItemText primary="Register" />
+                                </ListItemButton>
+                            </ListItem>
+                        </>
+                    )}
+                </List>
+            </Drawer>
 
             <Dialog open={openLogoutDialog} onClose={() => setOpenLogoutDialog(false)}>
                 <DialogTitle>Confirm Logout</DialogTitle>
