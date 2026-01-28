@@ -537,7 +537,27 @@ export default function ForgePage() {
                         sx={{mr: 2}}>
                     Add Optional Component
                 </Button>
-                <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+                <Menu
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl)}
+                    onClose={() => setAnchorEl(null)}
+                    anchorReference="none"
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}
+                    slotProps={{
+                        paper: {
+                            sx: {
+                                position: 'absolute',
+                                top: '30%',
+                                // left: '50%',
+                                // transform: 'translate(50%, +50%)',
+                            }
+                        }
+                    }}
+                >
                     {/*Removed RAM & Storage from optional components*/}
                     <Typography sx={{px: 2, py: 1, display: 'block', color: 'text.secondary'}}>
                         Accessories
