@@ -39,13 +39,22 @@ export default function ComponentDialog({open, category, onClose, mode, onSelect
     const [userId, setUserId] = useState<number | null>(null);
 
     useEffect(() => {
+        if (open && category) {
+            setSuggestForm({
+                link: '',
+                description: '',
+                componentType: category
+            });
+        }
+    }, [open, category]);
+
+    useEffect(() => {
         const timeoutId = setTimeout(() => {
             setSearchQuery(tempSearchQuery);
         }, 300);
         return () => clearTimeout(timeoutId);
     }, [tempSearchQuery]);
 
-    // Load user auth
     useEffect(() => {
         if (open) {
             onGetAuthState().then(userData => {
@@ -96,7 +105,9 @@ export default function ComponentDialog({open, category, onClose, mode, onSelect
             ...suggestForm,
             [e.target.name]: e.target.value
         });
-    };
+    }
+
+
 
     const submitSuggestion = async () => {
         if (!userId) {
