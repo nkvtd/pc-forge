@@ -270,13 +270,17 @@ export async function getCompatibleComponents(db: Database, buildId: number, com
         networkCards: existingComponents.filter(c => c.type === 'network_card'),
         networkAdapters: existingComponents.filter(c => c.type === 'network_adapter'),
         soundCards: existingComponents.filter(c => c.type === 'sound_card'),
+        memoryCards: existingComponents.filter(c => c.type === 'memory_card'),
+        opticalDrives: existingComponents.filter(c => c.type === 'optical_drive'),
+        cables: existingComponents.filter(c => c.type === 'cables')
     };
 
     const pciExpressSlotsUsed = [
         existing.gpu,
         ...existing.networkCards,
         ...existing.networkAdapters,
-        ...existing.soundCards
+        ...existing.soundCards,
+        ...existing.memoryCards
     ].reduce((sum: number, c: any) => {
         if (!c) return sum;
         return sum + (c.quantity || 1);
@@ -318,7 +322,14 @@ export async function getCompatibleComponents(db: Database, buildId: number, com
         case 'network_card':
         case 'network_adapter':
         case 'sound_card':
+        case 'memory_card':
             compatibleComponents = await getCompatiblePCIeComponents(db, existing, componentType, pciExpressSlotsUsed, limit, sortCondition);
+            break;
+        case 'optical_drive':
+            compatibleComponents = await getCompatibleOpticalDrives(db, existing, limit, sortCondition);
+            break;
+        case 'cables':
+            compatibleComponents = await getCompatibleCables(db, limit, sortCondition);
             break;
         default:
             compatibleComponents = [];
@@ -919,6 +930,14 @@ async function getCompatiblePCIeComponents(db: Database, existing: any, componen
                 channel: soundCardsTable.channel,
             };
             break;
+        case 'memory_card':
+            table = memoryCardsTable;
+            selectFields = {
+                ...selectFields,
+                numSlots: memoryCardsTable.numSlots,
+                interface: memoryCardsTable.interface,
+            };
+            break;
         default:
             return [];
     }
@@ -944,6 +963,64 @@ async function getCompatiblePCIeComponents(db: Database, existing: any, componen
     }
 
     return components;
+}
+
+async function getCompatibleOpticalDrives(db: Database, existing: any, limit?: number, sortCondition?: any) {
+    if (existing.opticalDrives && existing.opticalDrives.length > 0) {
+        return [];
+    }
+
+    return db
+        .select({
+            id: componentsTable.id,
+            name: componentsTable.name,
+            brand: componentsTable.brand,
+            price: componentsTable.price,
+            imgUrl: componentsTable.imgUrl,
+            type: componentsTable.type,
+            driveType: opticalDrivesTable.type,
+            formFactor: opticalDrivesTable.formFactor,
+            interface: opticalDrivesTable.interface,
+            writeSpeed: opticalDrivesTable.writeSpeed,
+            readSpeed: opticalDrivesTable.readSpeed
+        })
+        .from(componentsTable)
+        .innerJoin(
+            opticalDrivesTable,
+            eq(componentsTable.id, opticalDrivesTable.componentId)
+        )
+        .where(
+            eq(componentsTable.type, 'optical_drive')
+        )
+        .orderBy(
+            sortCondition
+        )
+        .limit(limit || 100);
+}
+async function getCompatibleCables(db: Database, limit?: number, sortCondition?: any) {
+    return db
+        .select({
+            id: componentsTable.id,
+            name: componentsTable.name,
+            brand: componentsTable.brand,
+            price: componentsTable.price,
+            imgUrl: componentsTable.imgUrl,
+            type: componentsTable.type,
+            lengthCm: cablesTable.lengthCm,
+            cableType: cablesTable.type
+        })
+        .from(componentsTable)
+        .innerJoin(
+            cablesTable,
+            eq(componentsTable.id, cablesTable.componentId)
+        )
+        .where(
+            eq(componentsTable.type, 'cables')
+        )
+        .orderBy(
+            sortCondition
+        )
+        .limit(limit || 100);
 }
 
 export async function addComponentToBuild(db: Database, userId: number, buildId: number, componentId: number) {
