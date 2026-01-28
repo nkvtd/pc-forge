@@ -4,7 +4,9 @@ import {
     Button, IconButton, Avatar, TextField, Grid, Chip, CircularProgress,
     Menu, MenuItem, ListItemIcon, Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
+
 import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from "@mui/icons-material/Close";
 import AlbumIcon from "@mui/icons-material/Album";
@@ -25,25 +27,14 @@ import ComponentDialog from '../../components/ComponentDialog';
 import ComponentDetailsDialog from '../../components/ComponentDetailsDialog';
 import {onAddNewBuild, onGetComponentDetails} from "../+Layout.telefunc";
 import {onEditBuild} from "../dashboard/user/userDashboard.telefunc";
-
-type BuildSlot = {
-    id: string;
-    type: string;
-    label: string;
-    component: any | null;
-    required: boolean;
-};
-
-const INITIAL_SLOTS: BuildSlot[] = [
-    {id: 'cpu', type: 'cpu', label: 'CPU', component: null, required: true},
-    {id: 'cooler', type: 'cooler', label: 'CPU Cooler', component: null, required: true},
-    {id: 'motherboard', type: 'motherboard', label: 'Motherboard', component: null, required: true},
-    {id: 'memory_1', type: 'memory', label: 'Memory', component: null, required: true},
-    {id: 'gpu', type: 'gpu', label: 'Video Card', component: null, required: true},
-    {id: 'storage_1', type: 'storage', label: 'Storage', component: null, required: true},
-    {id: 'powersupply', type: 'power_supply', label: 'Power Supply', component: null, required: true},
-    {id: 'case', type: 'case', label: 'Case', component: null, required: true},
-];
+import {BuildSlot, INITIAL_SLOTS} from "./types/buildTypes";
+import {renderSpecs} from "./utils/RenderSpecs";
+import {
+    getMaxRamSlots,
+    calculateUsedRamSlots,
+    calculateUsedStorageSlots
+} from "./utils/componentCalculations";
+import {Snackbar, Alert} from '@mui/material';
 
 export default function ForgePage() {
     const [slots, setSlots] = useState<BuildSlot[]>(INITIAL_SLOTS);
@@ -57,19 +48,32 @@ export default function ForgePage() {
     const [activeSlotId, setActiveSlotId] = useState<string | null>(null);
     const [detailsOpen, setDetailsOpen] = useState<any>(null);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const [submitDialogOpen, setSubmitDialogOpen] = useState(false);  // NEW
-    const [tempDescription, setTempDescription] = useState("");      // NEW
+    const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
+    const [tempDescription, setTempDescription] = useState("");
     const isSubmittedRef = React.useRef(false);
 
+    const [snackbar, setSnackbar] = useState<{
+        open: boolean;
+        message: string;
+        severity: 'error' | 'warning' | 'info' | 'success';
+    }>({
+        open: false,
+        message: '',
+        severity: 'info'
+    });
+
     useEffect(() => {
-        const price = slots.reduce((sum, slot) => sum + (Number(slot.component?.price) || 0), 0);
+        const price = slots.reduce((sum, slot) => {
+            const quantity = slot.component?.quantity || 1;
+            return sum + (Number(slot.component?.price) || 0) * quantity;
+        }, 0);
         setTotalPrice(price);
     }, [slots]);
 
     useEffect(() => {
         if (buildId && buildName.trim()) {
             const timeoutId = setTimeout(() => {
-                saveBuildState({ buildId, name: buildName.trim(), description });
+                saveBuildState({buildId, name: buildName.trim(), description});
             }, 1000);
 
             return () => clearTimeout(timeoutId);
@@ -104,7 +108,7 @@ export default function ForgePage() {
         if (urlBuildId && Number.isInteger(Number(urlBuildId)) && Number(urlBuildId) > 0) {
             const loadBuildId = Number(urlBuildId);
 
-            onGetBuildState({ buildId: loadBuildId })
+            onGetBuildState({buildId: loadBuildId})
                 .then((buildState) => {
                     if (buildState) {
                         setBuildId(loadBuildId);
@@ -112,15 +116,21 @@ export default function ForgePage() {
                         setDescription(buildState.build.description || "");
                     }
                 })
-                .catch(() => {})
+                .catch(() => {
+                })
                 .finally(() => {
-                    onGetBuildComponents({ buildId: loadBuildId })
+                    onGetBuildComponents({buildId: loadBuildId})
                         .then(async (components) => {
                             if (components && components.length > 0) {
                                 const detailedComponents = await Promise.all(
                                     components.map(async (c: any) => {
-                                        const full = await onGetComponentDetails({ componentId: c.id }).catch(() => null);
-                                        return full ? { ...c, ...full, details: full?.details } : c;
+                                        const full = await onGetComponentDetails({componentId: c.id}).catch(() => null);
+                                        return full ? {
+                                            ...c,
+                                            ...full,
+                                            details: full?.details,
+                                            quantity: c.quantity || 1
+                                        } : {...c, quantity: c.quantity || 1};
                                     })
                                 );
 
@@ -129,13 +139,14 @@ export default function ForgePage() {
 
                                 setSlots(prevSlots => prevSlots.map(slot => {
                                     const match = componentMap.get(slot.type);
-                                    return match ? { ...slot, component: match } : slot;
+                                    return match ? {...slot, component: match} : slot;
                                 }));
 
                                 window.history.replaceState({}, document.title, "/forge");
                             }
                         })
-                        .catch(() => {});
+                        .catch(() => {
+                        });
                 });
         }
     }, []);
@@ -157,14 +168,21 @@ export default function ForgePage() {
                 });
                 id = typeof result === 'number' ? result : (result as any)?.buildId;
                 if (!id || !Number.isInteger(id) || id <= 0) {
-                    alert("Failed to create draft build.");
+                    setSnackbar({
+                        open: true,
+                        message: 'Failed to create draft build. Please try again.',
+                        severity: 'error'
+                    });
                     return;
                 }
                 setBuildId(id);
             }
 
             const full = await onGetComponentDetails({componentId: component.id}).catch(() => null);
-            const merged = full ? {...component, ...full, details: full.details} : component;
+            const merged = full ? {...component, ...full, details: full.details, quantity: 1} : {
+                ...component,
+                quantity: 1
+            };
 
             setSlots(prev => prev.map(slot =>
                 slot.id === activeSlotId ? {...slot, component: merged} : slot
@@ -173,7 +191,11 @@ export default function ForgePage() {
 
             await onAddComponentToBuild({buildId: id, componentId: component.id});
         } catch (e) {
-            alert("Failed to add component. Please try again.");
+            setSnackbar({
+                open: true,
+                message: 'Failed to add component to build. Please try again.',
+                severity: 'error'
+            });
         } finally {
             setActiveSlotId(null);
         }
@@ -183,17 +205,96 @@ export default function ForgePage() {
         const slot = slots.find(s => s.id === slotId);
         if (!slot?.component || !buildId) return;
 
+        const quantity = slot.component.quantity || 1;
+
         setSlots(prev => prev.map(s =>
             s.id === slotId ? {...s, component: null} : s
         ));
 
         try {
-            await onRemoveComponentFromBuild({
-                buildId,
-                componentId: slot.component.id
-            });
+            for (let i = 0; i < quantity; i++) {
+                await onRemoveComponentFromBuild({
+                    buildId,
+                    componentId: slot.component.id
+                });
+            }
         } catch (e) {
             console.error("Failed to remove component from server", e);
+        }
+    };
+
+    const handleIncrementComponent = async (slotId: string) => {
+        const slot = slots.find(s => s.id === slotId);
+        if (!slot?.component || !buildId) return;
+
+        if (slot.type === 'memory') {
+            const maxSlots = getMaxRamSlots(slots);
+            const currentUsed = calculateUsedRamSlots(slots);
+            const modules = Number(slot.component.details?.modules || slot.component.modules || 1);
+
+            if (maxSlots && (currentUsed + modules > maxSlots)) {
+                setSnackbar({
+                    open: true,
+                    message: `Cannot add more RAM. Motherboard has only ${maxSlots} slots and ${currentUsed} are currently used.`,
+                    severity: 'error'
+                });
+                return;
+            }
+        }
+
+        if (slot.type === 'storage') {
+            const formFactor = slot.component.details?.formFactor || slot.component.formFactor;
+            const maxSlots = 4;
+            const currentUsed = calculateUsedStorageSlots(slots, formFactor);
+
+            if (maxSlots && (currentUsed + 1 > maxSlots)) {
+                setSnackbar({
+                    open: true,
+                    message: `Cannot add more ${formFactor} storage. Motherboard has only ${maxSlots} slots and ${currentUsed} are currently used.`,
+                    severity: 'error'
+                });
+                return;
+            }
+        }
+
+        try {
+            await onAddComponentToBuild({buildId, componentId: slot.component.id});
+
+            setSlots(prev => prev.map(s =>
+                s.id === slotId && s.component
+                    ? {...s, component: {...s.component, quantity: (s.component.quantity || 1) + 1}}
+                    : s
+            ));
+        } catch (e) {
+            setSnackbar({
+                open: true,
+                message: 'Failed to increment component. Please try again.',
+                severity: 'error'
+            });
+        }
+    };
+
+    const handleDecrementComponent = async (slotId: string) => {
+        const slot = slots.find(s => s.id === slotId);
+        if (!slot?.component || !buildId) return;
+
+        const currentQuantity = slot.component.quantity || 1;
+        if (currentQuantity <= 1) return;
+
+        try {
+            await onRemoveComponentFromBuild({buildId, componentId: slot.component.id});
+
+            setSlots(prev => prev.map(s =>
+                s.id === slotId && s.component
+                    ? {...s, component: {...s.component, quantity: (s.component.quantity || 1) - 1}}
+                    : s
+            ));
+        } catch (e) {
+            setSnackbar({
+                open: true,
+                message: 'Failed to decrement component. Please try again.',
+                severity: 'error'
+            });
         }
     };
 
@@ -219,21 +320,35 @@ export default function ForgePage() {
     };
 
     const handleSubmit = () => {
-        if (!buildName.trim()) return alert("Please name your build!");
-        if (!buildId) return alert("You must add at least one component before submitting.");
+        if (!buildName.trim()) {
+            setSnackbar({
+                open: true,
+                message: 'Please give your build a name!',
+                severity: 'warning'
+            });
+            return;
+        }
+        if (!buildId) {
+            setSnackbar({
+                open: true,
+                message: 'Please add at least one component to your build before submitting!',
+                severity: 'warning'
+            });
+            return;
+        }
 
         setTempDescription(description || "");
         setSubmitDialogOpen(true);
     };
 
     const handleSubmitConfirm = async () => {
-        if(!buildId) return;
+        if (!buildId) return;
 
         setIsSubmitting(true);
         setSubmitDialogOpen(false);
 
         try {
-            await saveBuildState({ buildId, name: buildName.trim(), description: tempDescription });
+            await saveBuildState({buildId, name: buildName.trim(), description: tempDescription});
             const result = await onEditBuild({buildId});
             if (!result) throw new Error("Failed to save build");
 
@@ -241,7 +356,11 @@ export default function ForgePage() {
             window.location.href = "/dashboard/user";
         } catch (e) {
             console.error(e);
-            alert("Failed to save build.");
+            setSnackbar({
+                open: true,
+                message: 'Failed to save build. Please try again.',
+                severity: 'error'
+            });
         } finally {
             setIsSubmitting(false);
         }
@@ -332,19 +451,79 @@ export default function ForgePage() {
                                 </TableCell>
 
                                 <TableCell width="10%" sx={{verticalAlign: 'top', pt: 3}}>
-                                    {slot.component ? `$${Number(slot.component.price).toFixed(2)}` : '-'}
+                                    {slot.component ? (
+                                        <>
+                                            ${(Number(slot.component.price) * (slot.component.quantity || 1)).toFixed(2)}
+                                            {(slot.component.quantity || 1) > 1 && (
+                                                <Typography variant="caption" display="block" color="text.secondary">
+                                                    ${Number(slot.component.price).toFixed(2)} each
+                                                </Typography>
+                                            )}
+                                        </>
+                                    ) : '-'}
                                 </TableCell>
 
-                                <TableCell align="right" width="10%" sx={{verticalAlign: 'top', pt: 2}}>
+                                <TableCell align="right" width="15%" sx={{verticalAlign: 'top', pt: 2}}>
                                     {slot.component && (
-                                        <IconButton color="error" onClick={() => handleRemovePart(slot.id)}>
-                                            <DeleteIcon/>
-                                        </IconButton>
-                                    )}
-                                    {!slot.required && (
-                                        <IconButton color="warning" onClick={() => handleDeleteSlot(slot.id)}>
-                                            <CloseIcon/>
-                                        </IconButton>
+                                        <Box sx={{
+                                            display: 'flex',
+                                            gap: 1,
+                                            justifyContent: 'flex-end',
+                                            alignItems: 'center'
+                                        }}>
+                                            {(slot.type === 'memory' || slot.type === 'storage') && (
+                                                <>
+                                                    <IconButton
+                                                        size="small"
+                                                        color="primary"
+                                                        onClick={() => handleDecrementComponent(slot.id)}
+                                                        disabled={(slot.component.quantity || 1) <= 1}
+                                                        sx={{
+                                                            bgcolor: 'action.hover',
+                                                            '&:disabled': {bgcolor: 'action.disabledBackground'}
+                                                        }}
+                                                    >
+                                                        <RemoveIcon/>
+                                                    </IconButton>
+
+                                                    <Typography
+                                                        variant="body2"
+                                                        sx={{
+                                                            minWidth: '20px',
+                                                            textAlign: 'center',
+                                                            fontWeight: 'bold'
+                                                        }}
+                                                    >
+                                                        {slot.component.quantity || 1}
+                                                    </Typography>
+
+                                                    <IconButton
+                                                        size="small"
+                                                        color="primary"
+                                                        onClick={() => handleIncrementComponent(slot.id)}
+                                                        sx={{bgcolor: 'action.hover'}}
+                                                    >
+                                                        <AddIcon/>
+                                                    </IconButton>
+                                                </>
+                                            )}
+
+                                            <IconButton
+                                                color="error"
+                                                onClick={() => handleRemovePart(slot.id)}
+                                            >
+                                                <DeleteIcon/>
+                                            </IconButton>
+
+                                            {!slot.required && (
+                                                <IconButton
+                                                    color="warning"
+                                                    onClick={() => handleDeleteSlot(slot.id)}
+                                                >
+                                                    <CloseIcon/>
+                                                </IconButton>
+                                            )}
+                                        </Box>
                                     )}
                                 </TableCell>
                             </TableRow>
@@ -359,19 +538,8 @@ export default function ForgePage() {
                     Add Optional Component
                 </Button>
                 <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+                    {/*Removed RAM & Storage from optional components*/}
                     <Typography sx={{px: 2, py: 1, display: 'block', color: 'text.secondary'}}>
-                        Memory & Storage
-                    </Typography>
-                    <MenuItem onClick={() => handleAddSlot('memory', 'Memory')}>
-                        <ListItemIcon><MemoryIcon/></ListItemIcon>
-                        Additional Memory
-                    </MenuItem>
-                    <MenuItem onClick={() => handleAddSlot('storage', 'Storage')}>
-                        <ListItemIcon><AlbumIcon/></ListItemIcon>
-                        Additional Storage
-                    </MenuItem>
-
-                    <Typography sx={{px: 2, py: 1, display: 'block', color: 'text.secondary', mt: 1}}>
                         Accessories
                     </Typography>
                     <MenuItem onClick={() => handleAddSlot('optical_drive', 'Optical Drive')}>
@@ -439,24 +607,24 @@ export default function ForgePage() {
             />
 
             <Dialog open={submitDialogOpen} onClose={() => setSubmitDialogOpen(false)} maxWidth="sm" fullWidth>
-                <DialogTitle sx={{ bgcolor: '#ff8201', color: 'white', fontWeight: 'bold' }}>
+                <DialogTitle sx={{bgcolor: '#ff8201', color: 'white', fontWeight: 'bold'}}>
                     Build Description
                 </DialogTitle>
-                <DialogContent sx={{ p: 3 }}>
-                    <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary' }}>
+                <DialogContent sx={{p: 3}}>
+                    <Typography variant="body1" sx={{mb: 2, color: 'text.secondary'}}>
                         Add some notes about your build (optional):
                     </Typography>
                     <TextField
                         fullWidth
                         multiline
                         rows={4}
-                        placeholder="e.g. Gaming build for 1440p, quiet operation, future-proof..."
+                        placeholder="e.g. Workstation monster, great for crunching numbers!"
                         value={tempDescription}
                         onChange={(e) => setTempDescription(e.target.value)}
                         variant="outlined"
                     />
                 </DialogContent>
-                <DialogActions sx={{ p: 3, pt: 0 }}>
+                <DialogActions sx={{p: 3, pt: 0}}>
                     <Button onClick={() => setSubmitDialogOpen(false)}>
                         Cancel
                     </Button>
@@ -468,7 +636,7 @@ export default function ForgePage() {
                     >
                         {isSubmitting ? (
                             <>
-                                <CircularProgress size={20} sx={{ mr: 1 }} />
+                                <CircularProgress size={20} sx={{mr: 1}}/>
                                 Submitting...
                             </>
                         ) : (
@@ -477,66 +645,21 @@ export default function ForgePage() {
                     </Button>
                 </DialogActions>
             </Dialog>
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={4000}
+                onClose={() => setSnackbar(prev => ({...prev, open: false}))}
+                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+            >
+                <Alert
+                    onClose={() => setSnackbar(prev => ({...prev, open: false}))}
+                    severity={snackbar.severity}
+                    variant="filled"
+                    sx={{width: '100%'}}
+                >
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </Container>
     );
-}
-
-function renderSpecs(c: any, type: string) {
-    if (!c) return null;
-    const data = {...c, ...(c.details || {})};
-    const chipStyle = {height: 24, fontSize: '0.75rem', bgcolor: 'rgba(0,0,0,0.05)'};
-    const specs: string[] = [];
-    const val = (k: string) => data[k] || data[k.toLowerCase()] || data[k.replace('_', '')];
-
-    switch (type) {
-        case 'cpu':
-            if (val('socket')) specs.push(val('socket'));
-            if (val('cores')) specs.push(`${val('cores')} Cores / ${val('threads')} Threads`);
-            const base = data.baseclock || data.baseClock || data.base_clock;
-            const boost = data.boostclock || data.boostClock || data.boost_clock;
-            if (base) specs.push(`Base: ${base}GHz`);
-            if (boost) specs.push(`Boost: ${boost}GHz`);
-            break;
-        case 'gpu':
-            if (val('vram')) specs.push(`${val('vram')}GB VRAM`);
-            if (val('chipset')) specs.push(val('chipset'));
-            if (val('length')) specs.push(`L: ${val('length')}mm`);
-            break;
-        case 'motherboard':
-            if (val('socket')) specs.push(val('socket'));
-            if (val('formfactor')) specs.push(val('formfactor'));
-            if (val('ramtype')) specs.push(val('ramtype'));
-            break;
-        case 'memory':
-            if (val('capacity')) specs.push(`${val('capacity')}GB`);
-            if (val('type')) specs.push(val('type'));
-            if (val('speed')) specs.push(`${val('speed')} MHz`);
-            if (val('modules')) specs.push(`${val('modules')}x`);
-            break;
-        case 'storage':
-            if (val('capacity')) specs.push(`${val('capacity')}GB`);
-            if (val('type')) specs.push(val('type'));
-            break;
-        case 'power_supply':
-            if (val('wattage')) specs.push(`Wattage: ${val('wattage')}W`);
-            if (val('type')) specs.push(val('type'));
-            break;
-        case 'case':
-            if (val('gpuMaxLength')) specs.push(`Max GPU Length: ${val('gpuMaxLength')}mm`);
-            if (val('coolerMaxHeight')) specs.push(`Max CPU Cooler Height: ${val('coolerMaxHeight')}mm`);
-            break;
-        case 'cooler':
-            if (val('type')) specs.push(`${val('type')} Cooler`);
-            if (val('height')) specs.push(`${val('height')}mm`);
-            break;
-        default:
-            if (data.brand) specs.push(data.brand);
-    }
-
-    if (specs.length === 0) {
-        if (data.brand) return <Chip label={data.brand} sx={chipStyle}/>;
-        return <Typography variant="caption" color="text.secondary">...</Typography>;
-    }
-
-    return specs.map((label, i) => <Chip key={i} label={label} sx={chipStyle}/>);
 }
