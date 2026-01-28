@@ -195,6 +195,7 @@ export async function getBuildComponents(db: Database, buildId: number) {
         .select({
             id: componentsTable.id,
             type: componentsTable.type,
+            quantity: buildComponentsTable.numComponents
         })
         .from(buildComponentsTable)
         .where(
@@ -230,6 +231,7 @@ export async function getBuildComponents(db: Database, buildId: number) {
 
         componentsDetails.push({
             ...comp,
+            quantity: comp.quantity,
             details: details
         });
     }
@@ -256,8 +258,6 @@ export async function getCompatibleComponents(db: Database, buildId: number, com
 
     if(!existingComponents) return null;
 
-
-
     const existing = {
         cpu: existingComponents.find(c => c.type === 'cpu'),
         motherboard: existingComponents.find(c => c.type === 'motherboard'),
@@ -277,11 +277,14 @@ export async function getCompatibleComponents(db: Database, buildId: number, com
         ...existing.networkCards,
         ...existing.networkAdapters,
         ...existing.soundCards
-    ].filter(Boolean).length;
+    ].reduce((sum: number, c: any) => {
+        if (!c) return sum;
+        return sum + (c.quantity || 1);
+    }, 0);
 
     const existingTDP = existingComponents.reduce((sum, c) => {
         const tdp = c.details?.tdp ? Number(c.details.tdp) : 0;
-        return sum + tdp;
+        return sum + (tdp * (c.quantity || 1));
     }, 0);
 
 
@@ -455,10 +458,10 @@ async function getCompatibleMotherboards(db: Database, existing: any, pciExpress
     const compatibleMotherboards = motherboards.filter(mobo => {
         if (existing.memory.length > 0) {
             const totalModules = existing.memory.reduce((sum: number, m: any) =>
-                sum + Number(m.details.modules), 0
+                sum + (Number(m.details.modules) * m.quantity), 0
             );
             const totalCapacity = existing.memory.reduce((sum: number, m: any) =>
-                sum + Number(m.details.capacity), 0
+                sum + (Number(m.details.capacity) * m.quantity), 0
             );
 
             if (totalModules > Number(mobo.numRamSlots)) return false;
@@ -703,9 +706,9 @@ async function getCompatibleStorage(db: Database, existing: any, limit?: number,
 
             if (!caseStorageFormFactor) return false;
 
-            const usedSlots = existing.storage.filter(
-                (s: any) => s.details.formFactor === stor.formFactor
-            ).length;
+            const usedSlots = existing.storage
+                .filter((s: any) => s.details.formFactor === stor.formFactor)
+                .reduce((sum: number, s: any) => sum + s.quantity, 0);
 
             return usedSlots < Number(caseStorageFormFactor.numSlots);
         });
@@ -820,9 +823,9 @@ async function getCompatibleCases(db: Database, existing: any, limit?: number, s
                 );
                 if (!storageFF) return false;
 
-                const usedSlots = existing.storage.filter(
-                    (s: any) => s.details.formFactor === stor.details.formFactor
-                ).length;
+                const usedSlots = existing.storage
+                    .filter((s: any) => s.details.formFactor === stor.details.formFactor)
+                    .reduce((sum: number, s: any) => sum + s.quantity, 0);;
 
                 return usedSlots <= Number(storageFF.numSlots);
             });
@@ -962,12 +965,20 @@ export async function addComponentToBuild(db: Database, userId: number, buildId:
             .insert(buildComponentsTable)
             .values({
                 buildId,
-                componentId
+                componentId,
+                numComponents: 1
+            })
+            .onConflictDoUpdate({
+                target: [buildComponentsTable.buildId, buildComponentsTable.componentId],
+                set: {
+                    numComponents: sql`${buildComponentsTable.numComponents} + 1`
+                }
             });
 
         const buildComponents = await tx
             .select({
                 price:  componentsTable.price,
+                quantity: buildComponentsTable.numComponents
             })
             .from(buildComponentsTable)
             .innerJoin(
@@ -978,7 +989,9 @@ export async function addComponentToBuild(db: Database, userId: number, buildId:
                 eq(buildComponentsTable.buildId, buildId)
             );
 
-        const totalPrice = buildComponents.reduce((sum, c) => sum + Number(c.price), 0);
+        const totalPrice = buildComponents.reduce((sum, c) =>
+            sum + (Number(c.price) * c.quantity), 0
+        );
 
         await tx
             .update(buildsTable)
@@ -1008,20 +1021,48 @@ export async function removeComponentFromBuild(db: Database, userId: number, bui
 
         if(!build || build.isApproved) return null;
 
-        const result = await tx
-            .delete(buildComponentsTable)
+        const [existing] = await tx
+            .select({
+                quantity: buildComponentsTable.numComponents
+            })
+            .from(buildComponentsTable)
             .where(
                 and(
                     eq(buildComponentsTable.buildId, buildId),
                     eq(buildComponentsTable.componentId, componentId)
                 )
-            );
+            )
+            .limit(1);
 
-        if(result.rowCount === 0) return null;
+        if (!existing) return null;
+
+        if (existing.quantity > 1) {
+            await tx
+                .update(buildComponentsTable)
+                .set({
+                    numComponents: sql`${buildComponentsTable.numComponents} - 1`
+                })
+                .where(
+                    and(
+                        eq(buildComponentsTable.buildId, buildId),
+                        eq(buildComponentsTable.componentId, componentId)
+                    )
+                );
+        } else {
+            await tx
+                .delete(buildComponentsTable)
+                .where(
+                    and(
+                        eq(buildComponentsTable.buildId, buildId),
+                        eq(buildComponentsTable.componentId, componentId)
+                    )
+                );
+        }
 
         const buildComponents = await tx
             .select({
                 price:  componentsTable.price,
+                quantity: buildComponentsTable.numComponents
             })
             .from(buildComponentsTable)
             .innerJoin(
@@ -1032,7 +1073,9 @@ export async function removeComponentFromBuild(db: Database, userId: number, bui
                 eq(buildComponentsTable.buildId, buildId)
             );
 
-        const totalPrice = buildComponents.reduce((sum, c) => sum + Number(c.price), 0);
+        const totalPrice = buildComponents.reduce((sum, c) =>
+            sum + (Number(c.price) * c.quantity), 0
+        );
 
         await tx
             .update(buildsTable)
@@ -1043,6 +1086,6 @@ export async function removeComponentFromBuild(db: Database, userId: number, bui
                 eq(buildsTable.id, buildId)
             );
 
-        return result;
+        return componentId;
     })
 }

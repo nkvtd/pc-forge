@@ -1,5 +1,5 @@
 {
-  "id": "779a3882-651b-446d-8967-3728aeea2888",
+  "id": "d1ab4ce8-e387-4d74-8d5b-511fdbe0a032",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -8,12 +8,6 @@
       "name": "build_component",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
         "build_id": {
           "name": "build_id",
           "type": "integer",
@@ -25,6 +19,13 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true
+        },
+        "num_components": {
+          "name": "num_components",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
         }
       },
       "indexes": {},
@@ -56,7 +57,15 @@
           "onUpdate": "cascade"
         }
       },
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "build_component_build_id_component_id_pk": {
+          "name": "build_component_build_id_component_id_pk",
+          "columns": [
+            "build_id",
+            "component_id"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},

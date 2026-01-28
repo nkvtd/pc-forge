@@ -199,7 +199,8 @@ export async function getBuildDetails(db: Database, buildId: number, userId?: nu
         const components = await tx
             .select({
                 componentId: buildComponentsTable.componentId,
-                component: componentsTable
+                component: componentsTable,
+                quantity: buildComponentsTable.numComponents
             })
             .from(buildComponentsTable)
             .innerJoin(
@@ -291,7 +292,10 @@ export async function getBuildDetails(db: Database, buildId: number, userId?: nu
 
         return {
             ...buildDetails,
-            components: components.map(c => c.component),
+            components: components.map(c => ({
+                    ...c.component,
+                    quantity: c.quantity
+            })),
             reviews: reviews.map(r => ({
                 username: r.username,
                 content: r.content,
@@ -418,7 +422,10 @@ export async function cloneBuild(db: Database, userId: number, buildId: number) 
         if(!newBuild) return null;
 
         const existing = await tx
-            .select({ componentId: buildComponentsTable.componentId })
+            .select({
+                componentId: buildComponentsTable.componentId,
+                numComponents: buildComponentsTable.numComponents
+            })
             .from(buildComponentsTable)
             .where(eq(buildComponentsTable.buildId, buildId));
 
@@ -427,6 +434,7 @@ export async function cloneBuild(db: Database, userId: number, buildId: number) 
                 existing.map((r) => ({
                     buildId: newBuild.id,
                     componentId: r.componentId,
+                    numComponents: r.numComponents
                 })),
             );
         }
@@ -544,7 +552,8 @@ export async function getBuildState(db: Database, userId: number, buildId: numbe
 
         const components = await tx
             .select({
-                componentId: buildComponentsTable.componentId
+                componentId: buildComponentsTable.componentId,
+                quantity: buildComponentsTable.numComponents
             })
             .from(buildComponentsTable)
             .where(
@@ -553,7 +562,10 @@ export async function getBuildState(db: Database, userId: number, buildId: numbe
 
         return {
             build,
-            componentIds: components.map(c => c.componentId)
+            components: components.map(c => ({
+                id: c.componentId,
+                quantity: c.quantity
+            }))
         };
     });
 }

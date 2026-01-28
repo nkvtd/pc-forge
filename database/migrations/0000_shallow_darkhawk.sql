@@ -1,7 +1,8 @@
 CREATE TABLE "build_component" (
-	"id" serial PRIMARY KEY NOT NULL,
 	"build_id" integer NOT NULL,
-	"component_id" integer NOT NULL
+	"component_id" integer NOT NULL,
+	"num_components" integer DEFAULT 1 NOT NULL,
+	CONSTRAINT "build_component_build_id_component_id_pk" PRIMARY KEY("build_id","component_id")
 );
 --> statement-breakpoint
 CREATE TABLE "build" (

@@ -16,14 +16,19 @@ export const buildsTable = pgTable("build", {
 });
 
 export const buildComponentsTable = pgTable("build_component", {
-        id: serial("id").primaryKey(),
         buildId: integer("build_id")
             .notNull()
             .references(() => buildsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
         componentId: integer("component_id")
             .notNull()
             .references(() => componentsTable.id, { onDelete: "cascade", onUpdate: "cascade" }),
+        numComponents: integer("num_components")
+            .notNull()
+            .default(1),
     },
+    (t) => ({
+        pk: primaryKey({ columns: [t.buildId, t.componentId] }),
+    }),
 );
 
 export const favoriteBuildsTable = pgTable("favorite_build", {
