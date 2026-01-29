@@ -9,6 +9,7 @@
     "drizzle:migrate": "drizzle-kit migrate",
     "drizzle:studio": "drizzle-kit studio",
     "drizzle:seed": "tsx database/drizzle/util/seed.ts",
+    "drizzle:reports": "tsx database/drizzle/util/reports.ts",
     "prod": "vike build && node ./dist/server/index.mjs"
   },
   "dependencies": {
