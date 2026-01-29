@@ -11,13 +11,6 @@ export function parseSessionUserId(sessionUserId: unknown): number | undefined {
     return Number.isInteger(n) && n > 0 ? n : undefined;
 }
 
-export function requireUser() {
-    const c = ctx();
-    const userId = parseSessionUserId(c.session?.user?.id);
-    if (!userId) throw Abort();
-    return { c, userId };
-}
-
 export function getAuthState() {
     const c = ctx();
     const userId = parseSessionUserId(c.session?.user?.id);
@@ -30,9 +23,15 @@ export function getAuthState() {
     };
 }
 
+export function requireUser() {
+    const c = ctx();
+    const userId = parseSessionUserId(c.session?.user?.id);
+    if (!userId) throw Abort();
+    return { c, userId };
+}
+
 export async function requireAdmin() {
     const { c, userId } = requireUser();
-
 
     if(!c.session?.user?.isAdmin) throw Abort();
 

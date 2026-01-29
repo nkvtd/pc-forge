@@ -67,7 +67,7 @@ export async function onGetDetailsForNewComponent({ type }
                                                   : { type: string }) {
     const { c, userId } = await requireAdmin()
 
-    const details = await drizzleQueries.getDetailsForNewComponent(type);
+    const details = await drizzleQueries.getDetailsNewComponent(type);
 
     return details;
 }
