@@ -8,7 +8,7 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 
 import BuildCard from '../../components/BuildCard';
 import BuildDetailsDialog from '../../components/BuildDetailsDialog';
-import { onGetApprovedBuilds, onCloneBuild, onGetAuthState } from '../+Layout.telefunc';
+import { onGetApprovedBuilds, onGetAuthState } from '../+Layout.telefunc';
 
 export default function CompletedBuildsPage() {
     const [builds, setBuilds] = useState<any[]>([]);
@@ -64,17 +64,8 @@ export default function CompletedBuildsPage() {
     };
 
     useEffect(() => {
-        loadBuilds();
+        void loadBuilds();
     }, [sortBy, searchQuery]);
-
-    const handleClone = async (buildId: number) => {
-        if (!userId) return alert("Please login to clone builds!");
-        if (confirm(`Clone this build?`)) {
-            await onCloneBuild({buildId});
-            alert("Build cloned!");
-            setSelectedBuildId(null);
-        }
-    };
 
     return (
         <Container maxWidth={false} sx={{ mt: 4, mb: 10, px: { xs: 2, md: 4 } }}>
@@ -101,8 +92,10 @@ export default function CompletedBuildsPage() {
                             placeholder="Search builds..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            InputProps={{
-                                startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment>,
+                            slotProps={{
+                                input: {
+                                    startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment>,
+                                }
                             }}
                             sx={{ mb: 3 }}
                         />
@@ -192,7 +185,6 @@ export default function CompletedBuildsPage() {
                 buildId={selectedBuildId}
                 currentUser={userId}
                 onClose={() => setSelectedBuildId(null)}
-                onClone={handleClone}
             />
         </Container>
     );
