@@ -58,6 +58,17 @@ export default function ComponentDialog({open, category, onClose, mode, onSelect
     }, [tempSearchQuery]);
 
     useEffect(() => {
+        if (open && category) {
+            setSelectedBrands([]);
+            setSortOrder('price_desc');
+            setTempSearchQuery('');
+            setSearchQuery('');
+            setPriceRange([0, 2000]);
+        }
+    }, [open, category]);
+
+
+    useEffect(() => {
         if (open) {
             onGetAuthState().then(userData => {
                 setUserId(userData.userId);
@@ -296,7 +307,7 @@ export default function ComponentDialog({open, category, onClose, mode, onSelect
                             <Box component="span" sx={{display: {xs: 'none', sm: 'inline'}}}>
                                 Browsing:
                             </Box>
-                            <b> {category === 'gpu' ? 'Graphics Cards' : category?.toUpperCase()}</b>
+                            <b> {category === 'gpu' ? 'GRAPHICS CARDS' : category === 'memory_card' ? 'STORAGE EXPANSION CARDS' : category?.toUpperCase()}</b>
                             {mode === 'forge' && currentBuildId && (
                                 <Typography
                                     variant="caption"

@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {
-    Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid, Box, Typography,
+    Dialog, DialogTitle, DialogContent, DialogActions, Button, Box, Typography,
     IconButton, Tab, Tabs, Table, TableBody, TableCell, TableRow, Rating, TextField, Avatar, Chip, Alert
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
@@ -33,9 +33,8 @@ export default function BuildDetailsDialog({open, buildId, onClose, currentUser,
     const [reviewText, setReviewText] = useState("");
     const [ratingVal, setRatingVal] = useState(5);
 
-    // Main details fetch
     useEffect(() => {
-        if (open && buildId !== null && typeof buildId === 'number') {
+        if (open && buildId !== null) {
             setLoading(true);
             setReviewText("");
             setRatingVal(5);
@@ -51,7 +50,7 @@ export default function BuildDetailsDialog({open, buildId, onClose, currentUser,
     }, [open, buildId]);
 
     useEffect(() => {
-        if (open && buildId !== null && typeof buildId === 'number') {
+        if (open && buildId !== null) {
             onGetBuildState({buildId})
                 .then(state => {
                     setIsOwner(!!state);
@@ -61,6 +60,13 @@ export default function BuildDetailsDialog({open, buildId, onClose, currentUser,
             setIsOwner(false);
         }
     }, [open, buildId]);
+
+    useEffect(() => {
+        if (open) {
+            setTabIndex(0);
+        }
+    }, [open, buildId]);
+
 
     const handleFavorite = async () => {
         if (!currentUser || buildId === null) return alert("Please login to favorite builds.");
@@ -102,7 +108,7 @@ export default function BuildDetailsDialog({open, buildId, onClose, currentUser,
 
     return (
         <>
-            <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth scroll="paper">
+            <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth scroll="body">
                 {loading || !details ? (
                     <Box sx={{p: 5, textAlign: 'center'}}>Loading Forge Schematics...</Box>
                 ) : (
@@ -145,8 +151,18 @@ export default function BuildDetailsDialog({open, buildId, onClose, currentUser,
 
                             <Box sx={{p: 3}}>
                                 {tabIndex === 0 && (
-                                    <Grid container spacing={2}>
-                                        <Grid item xs={12} md={8}>
+                                    <Box
+                                        sx={{
+                                            display: 'grid',
+                                            gridTemplateColumns: {
+                                                xs: '1fr',
+                                                md: '2fr 1fr'
+                                            },
+                                            gap: 2,
+                                            width: '100%'
+                                        }}
+                                    >
+                                        <Box>
                                             <Table size="small">
                                                 <TableBody>
                                                     {details.components.map((comp: any) => (
@@ -192,12 +208,13 @@ export default function BuildDetailsDialog({open, buildId, onClose, currentUser,
                                                     </TableRow>
                                                 </TableBody>
                                             </Table>
-                                        </Grid>
+                                        </Box>
 
-                                        <Grid item xs={12} md={4}>
+                                        <Box>
                                             <Box sx={{bgcolor: '#424343', p: 2, borderRadius: 2, mb: 2}}>
-                                                <Typography color="primary.main" gutterBottom fontWeight="bold">Builder's
-                                                    Notes</Typography>
+                                                <Typography color="primary.main" gutterBottom fontWeight="bold">
+                                                    Builder's Notes
+                                                </Typography>
                                                 <Typography color="primary.main" variant="body2"
                                                             sx={{fontStyle: 'italic'}}>
                                                     "{details.description || "No notes provided."}"
@@ -242,8 +259,8 @@ export default function BuildDetailsDialog({open, buildId, onClose, currentUser,
                                                     {details.isFavorite ? "Favorited" : "Add to Favorites"}
                                                 </Button>
                                             </Box>
-                                        </Grid>
-                                    </Grid>
+                                        </Box>
+                                    </Box>
                                 )}
 
                                 {tabIndex === 1 && (
@@ -312,8 +329,9 @@ export default function BuildDetailsDialog({open, buildId, onClose, currentUser,
                                                 </Box>
                                             ))}
                                             {details.reviews.length === 0 && (
-                                                <Typography color="text.secondary" align="center">No reviews yet. Be the
-                                                    first!</Typography>
+                                                <Typography color="text.secondary" align="center">
+                                                    No reviews yet. Be the first!
+                                                </Typography>
                                             )}
                                         </Box>
                                     </Box>

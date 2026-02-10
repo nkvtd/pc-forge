@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions, Button,
-    Typography, Box, Grid, Chip, CircularProgress, IconButton,
+    Typography, Box, Chip, CircularProgress, IconButton,
     Table, TableBody, TableCell, TableContainer, TableRow, Paper
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
@@ -91,8 +91,9 @@ export default function ComponentDetailsDialog({open, component, onClose}: any) 
         <Dialog
             open={open}
             onClose={onClose}
-            maxWidth="lg"
-            // fullWidth
+            maxWidth="md"
+            fullWidth
+            scroll="body"
             sx={{zIndex: 1400}}
         >
             <DialogTitle sx={{
@@ -115,27 +116,40 @@ export default function ComponentDetailsDialog({open, component, onClose}: any) 
                 </IconButton>
             </DialogTitle>
 
-            <DialogContent dividers>
+            <DialogContent
+                sx={{
+                    p: 1,
+                    overflow: 'visible'
+                }}
+            >
                 {loading ? (
                     <Box sx={{display: 'flex', justifyContent: 'center', p: 5}}>
                         <CircularProgress/>
                     </Box>
                 ) : (
-                    <Grid container spacing={4}>
-                        <Grid item xs={12} md={4} sx={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+                    <Box
+                        sx={{
+                            display: 'grid',
+                            gridTemplateColumns: {
+                                xs: '1fr',
+                                md: '1fr 1fr'
+                            },
+                            gap: 4,
+                            width: '100%'
+                        }}
+                    >
+                        <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
                             <Box
                                 component="img"
-                                // src={`https://placehold.co/400x400?text=${encodeURIComponent(displayData.name)}`}
                                 src={displayData.imgUrl}
                                 alt={displayData.name}
                                 sx={{
                                     width: '100%',
                                     maxHeight: 300,
                                     objectFit: 'contain',
-                                    mb: 2,
-                                    // border: '1px solid #eee',
-                                    // borderRadius: 2,
-                                    p: 2
+                                    mb: 1,
+                                    mt: 7,
+                                    p: 1
                                 }}
                             />
                             <Chip
@@ -143,23 +157,60 @@ export default function ComponentDetailsDialog({open, component, onClose}: any) 
                                 color="primary"
                                 sx={{fontWeight: 'bold'}}
                             />
-                        </Grid>
+                        </Box>
 
-                        <Grid item xs={12} md={8}>
-                            <Typography variant="subtitle1" fontWeight="bold" gutterBottom
-                                        sx={{borderBottom: '2px solid #ff8201', display: 'inline-block', mb: 0.5}}>
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            width: '70%'
+                        }}>
+                            <Typography
+                                variant="subtitle1"
+                                fontWeight="bold"
+                                gutterBottom
+                                sx={{
+                                    borderBottom: '2px solid #ff8201',
+                                    mb: 1,
+                                    mt: 1,
+                                    textAlign: 'center',
+                                    width: '100%'
+                                }}
+                            >
                                 Technical Specifications
                             </Typography>
 
-                            <TableContainer component={Paper} variant="outlined">
-                                <Table size="small">
+                            <TableContainer
+                                component={Paper}
+                                variant="outlined"
+                                sx={{
+                                    maxWidth: '100%',
+                                    width: '100%'
+                                }}
+                            >
+                                <Table size="medium">
                                     <TableBody>
                                         <TableRow>
-                                            <TableCell component="th" scope="row"
-                                                       sx={{fontWeight: 'bold', width: '30%', bgcolor: '#1e1e1e'}}>
+                                            <TableCell
+                                                component="th"
+                                                scope="row"
+                                                sx={{
+                                                    fontWeight: 'bold',
+                                                    width: '50%',
+                                                    bgcolor: '#1e1e1e',
+                                                    textAlign: 'center',
+                                                    px: 2
+                                                }}
+                                            >
                                                 Brand
                                             </TableCell>
-                                            <TableCell>{displayData.brand}</TableCell>
+                                            <TableCell sx={{
+                                                textAlign: 'center',
+                                                px: 2,
+                                                width: '50%'
+                                            }}>
+                                                {displayData.brand}
+                                            </TableCell>
                                         </TableRow>
 
                                         {Object.entries(specs).map(([key, val]) => {
@@ -167,27 +218,46 @@ export default function ComponentDetailsDialog({open, component, onClose}: any) 
 
                                             return (
                                                 <TableRow key={key}>
-                                                    <TableCell component="th" scope="row" sx={{
-                                                        fontWeight: 'bold',
-                                                        width: '30%',
-                                                        bgcolor: '#1e1e1e'
-                                                    }}>
+                                                    <TableCell
+                                                        component="th"
+                                                        scope="row"
+                                                        sx={{
+                                                            fontWeight: 'bold',
+                                                            width: '50%',
+                                                            bgcolor: '#1e1e1e',
+                                                            textAlign: 'center',
+                                                            px: 2
+                                                        }}
+                                                    >
                                                         {formatKey(key)}
                                                     </TableCell>
-                                                    <TableCell>{renderValue(key, val)}</TableCell>
+                                                    <TableCell sx={{
+                                                        textAlign: 'center',
+                                                        px: 2,
+                                                        width: '50%'
+                                                    }}>
+                                                        {renderValue(key, val)}
+                                                    </TableCell>
                                                 </TableRow>
                                             );
                                         })}
                                     </TableBody>
                                 </Table>
                             </TableContainer>
-                            <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 0.5}}>
+
+                            <Box sx={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                mt: 1,
+                                width: '100%'
+                            }}>
                                 <Typography variant="h4" color="primary.main" fontWeight="bold">
                                     {formatMoney(displayData.price)}
                                 </Typography>
                             </Box>
-                        </Grid>
-                    </Grid>
+                        </Box>
+                    </Box>
                 )}
             </DialogContent>
 
@@ -197,7 +267,7 @@ export default function ComponentDetailsDialog({open, component, onClose}: any) 
                             backgroundColor: '#ff8201',
                             color: 'white',
                             borderColor: '#ff8201',
-                            onHover: {backgroundColor: '#ba5d02', borderColor: '#ba5d02'}
+                            '&:hover': {backgroundColor: '#ba5d02', borderColor: '#ba5d02'}
                         }}
                 >Close</Button>
             </DialogActions>
