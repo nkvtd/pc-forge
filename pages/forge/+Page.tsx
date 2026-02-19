@@ -25,7 +25,7 @@ import {
 
 import ComponentDialog from '../../components/ComponentDialog';
 import ComponentDetailsDialog from '../../components/ComponentDetailsDialog';
-import {onAddNewBuild, onGetComponentDetails} from "../+Layout.telefunc";
+import {onAddNewBuild, onGetAuthState, onGetComponentDetails} from "../+Layout.telefunc";
 import {onEditBuild} from "../dashboard/user/userDashboard.telefunc";
 import {BuildSlot, INITIAL_SLOTS} from "./types/buildTypes";
 import {renderSpecs} from "./utils/RenderSpecs";
@@ -156,22 +156,34 @@ export default function ForgePage() {
         setTimeout(() => setBrowserOpen(true), 0);
     };
 
+    // fix: changed text, new catch and removed setActiveSlotId(null), so the component name doesn't disappear.
     const handleSelectComponent = async (component: any) => {
         if (!activeSlotId) return;
 
         try {
             let id = buildId;
             if (!id) {
-                const result = await onAddNewBuild({
-                    name: buildName.trim() || "New Build",
-                    description: description || "Work in progress"
-                });
+                let result;
+                try {
+                    result = await onAddNewBuild({
+                        name: buildName.trim() || "New Build",
+                        description: description || "Work in progress"
+                    });
+                } catch {
+                    setSnackbar({
+                        open: true,
+                        message: 'Please log in first!',
+                        severity: 'warning'
+                    });
+                    return;
+                }
+
                 id = typeof result === 'number' ? result : (result as any)?.buildId;
                 if (!id || !Number.isInteger(id) || id <= 0) {
                     setSnackbar({
                         open: true,
-                        message: 'Failed to create draft build. Please try again.',
-                        severity: 'error'
+                        message: 'Please log in first!',
+                        severity: 'warning'
                     });
                     return;
                 }
@@ -197,10 +209,9 @@ export default function ForgePage() {
                 severity: 'error'
             });
         } finally {
-            setActiveSlotId(null);
+            // setActiveSlotId(null);
         }
     };
-
     const handleRemovePart = async (slotId: string) => {
         const slot = slots.find(s => s.id === slotId);
         if (!slot?.component || !buildId) return;
@@ -319,7 +330,21 @@ export default function ForgePage() {
         setSlots(prev => prev.filter(s => s.id !== slotId));
     };
 
+
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    useEffect(() => {
+        onGetAuthState().then(userData => {
+            setIsLoggedIn(!!userData?.userId);
+        });
+    }, []);
+
+
     const handleSubmit = () => {
+        if (!isLoggedIn) {
+            window.location.href = '/auth/login'
+            return;
+        }
+
         if (!buildName.trim()) {
             setSnackbar({
                 open: true,
@@ -328,6 +353,7 @@ export default function ForgePage() {
             });
             return;
         }
+
         if (!buildId) {
             setSnackbar({
                 open: true,
