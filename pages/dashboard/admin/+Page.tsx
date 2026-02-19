@@ -96,10 +96,14 @@ export default function AdminDashboard() {
         if (!buildApprovalDialog.buildId || !rejectReason.trim()) return;
         setApprovalLoading(true);
         try {
-            await onSetBuildApprovalStatus({buildId: buildApprovalDialog.buildId, isApproved: false});
+            await onSetBuildApprovalStatus({
+                buildId: buildApprovalDialog.buildId,
+                isApproved: false,
+            });
             setBuildApprovalDialog({open: false, buildId: null, buildName: ''});
             loadData();
         } catch (e) {
+            console.error("Reject error:", e); // 🔧 add this
             alert("Reject failed");
         } finally {
             setApprovalLoading(false);

@@ -307,7 +307,15 @@ export default function ComponentDialog({open, category, onClose, mode, onSelect
                             <Box component="span" sx={{display: {xs: 'none', sm: 'inline'}}}>
                                 Browsing:
                             </Box>
-                            <b> {category === 'gpu' ? 'GRAPHICS CARDS' : category === 'memory_card' ? 'STORAGE EXPANSION CARDS' : category?.toUpperCase()}</b>
+                            <b> {
+                                category === 'gpu' ? 'GRAPHICS CARDS'
+                                    : category === 'memory_card' ? 'STORAGE EXPANSION CARDS'
+                                        : category === 'power_supply' ? 'POWER SUPPLIES'
+                                            : category === 'network_card' ? 'NETWORK CARDS'
+                                                : category === 'network_adapters' ? 'NETWORK ADAPTERS'
+                                                    : category === 'sound_card' ? 'SOUND CARDS'
+                                                        : category === 'optical_drive' ? 'OPTICAL DRIVES'
+                                                            : category?.toUpperCase()}</b>
                             {mode === 'forge' && currentBuildId && (
                                 <Typography
                                     variant="caption"

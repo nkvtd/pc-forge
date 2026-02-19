@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions, Button, Box, Typography,
-    IconButton, Tab, Tabs, Table, TableBody, TableCell, TableRow, Rating, TextField, Avatar, Chip, Alert
+    IconButton, Tab, Tabs, Table, TableBody, TableCell, TableRow, Rating, TextField, Avatar, Chip, Alert, Snackbar
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
@@ -32,6 +32,16 @@ export default function BuildDetailsDialog({open, buildId, onClose, currentUser,
 
     const [reviewText, setReviewText] = useState("");
     const [ratingVal, setRatingVal] = useState(5);
+
+    const [snackbar, setSnackbar] = useState<{
+        open: boolean;
+        message: string;
+        severity: 'error' | 'warning' | 'info' | 'success';
+    }>({
+        open: false,
+        message: '',
+        severity: 'warning'
+    });
 
     useEffect(() => {
         if (open && buildId !== null) {
@@ -94,15 +104,36 @@ export default function BuildDetailsDialog({open, buildId, onClose, currentUser,
     const handleCloneConfirm = async () => {
         if (!cloningBuildId) return;
 
+        if(!currentUser){
+            window.location.href="/auth/login";
+            return;
+        }
+
         try {
             const newBuildId = await onCloneBuild({buildId: cloningBuildId});
             window.location.href = `/forge?buildId=${newBuildId}`;
             setCloneDialogOpen(false);
             setCloningBuildId(null);
         } catch (e) {
-            alert("Failed to clone build. Please try again.");
+            // alert("Failed to clone build. Please try again.");
+            setCloneDialogOpen(false);
+            setSnackbar({
+                open: true,
+                message: 'Failed to clone build. Please try again!',
+                severity: 'error'
+            })
         }
     };
+
+    const handleCloneClick = () => {
+        if(!currentUser){
+            window.location.href="/auth/login";
+            return;
+        }
+
+        setCloningBuildId(details.id);
+        setCloneDialogOpen(true);
+    }
 
     if (!open) return null;
 
@@ -241,10 +272,7 @@ export default function BuildDetailsDialog({open, buildId, onClose, currentUser,
                                                         color="primary"
                                                         size="large"
                                                         startIcon={<AutoFixHighIcon/>}
-                                                        onClick={() => {
-                                                            setCloningBuildId(details.id);
-                                                            setCloneDialogOpen(true);
-                                                        }}
+                                                        onClick={handleCloneClick}
                                                     >
                                                         Clone & Edit
                                                     </Button>
@@ -361,6 +389,21 @@ export default function BuildDetailsDialog({open, buildId, onClose, currentUser,
                     </Button>
                 </DialogActions>
             </Dialog>
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={5000}
+                onClose={() => setSnackbar(prev => ({...prev, open: false}))}
+                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+            >
+                <Alert
+                    onClose={() => setSnackbar(prev => ({...prev, open: false}))}
+                    severity={snackbar.severity}
+                    variant="filled"
+                    sx={{width: '100%'}}
+                >
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </>
     );
 }

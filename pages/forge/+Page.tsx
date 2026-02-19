@@ -490,67 +490,69 @@ export default function ForgePage() {
                                 </TableCell>
 
                                 <TableCell align="right" width="15%" sx={{verticalAlign: 'top', pt: 2}}>
-                                    {slot.component && (
-                                        <Box sx={{
-                                            display: 'flex',
-                                            gap: 1,
-                                            justifyContent: 'flex-end',
-                                            alignItems: 'center'
-                                        }}>
-                                            {(slot.type === 'memory' || slot.type === 'storage') && (
-                                                <>
-                                                    <IconButton
-                                                        size="small"
-                                                        color="primary"
-                                                        onClick={() => handleDecrementComponent(slot.id)}
-                                                        disabled={(slot.component.quantity || 1) <= 1}
-                                                        sx={{
-                                                            bgcolor: 'action.hover',
-                                                            '&:disabled': {bgcolor: 'action.disabledBackground'}
-                                                        }}
-                                                    >
-                                                        <RemoveIcon/>
-                                                    </IconButton>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        gap: 1,
+                                        justifyContent: 'flex-end',
+                                        alignItems: 'center'
+                                    }}>
+                                        {slot.component && (
+                                            <>
+                                                {(slot.type === 'memory' || slot.type === 'storage') && (
+                                                    <>
+                                                        <IconButton
+                                                            size="small"
+                                                            color="primary"
+                                                            onClick={() => handleDecrementComponent(slot.id)}
+                                                            disabled={(slot.component.quantity || 1) <= 1}
+                                                            sx={{
+                                                                bgcolor: 'action.hover',
+                                                                '&:disabled': {bgcolor: 'action.disabledBackground'}
+                                                            }}
+                                                        >
+                                                            <RemoveIcon/>
+                                                        </IconButton>
 
-                                                    <Typography
-                                                        variant="body2"
-                                                        sx={{
-                                                            minWidth: '20px',
-                                                            textAlign: 'center',
-                                                            fontWeight: 'bold'
-                                                        }}
-                                                    >
-                                                        {slot.component.quantity || 1}
-                                                    </Typography>
+                                                        <Typography
+                                                            variant="body2"
+                                                            sx={{
+                                                                minWidth: '20px',
+                                                                textAlign: 'center',
+                                                                fontWeight: 'bold'
+                                                            }}
+                                                        >
+                                                            {slot.component.quantity || 1}
+                                                        </Typography>
 
-                                                    <IconButton
-                                                        size="small"
-                                                        color="primary"
-                                                        onClick={() => handleIncrementComponent(slot.id)}
-                                                        sx={{bgcolor: 'action.hover'}}
-                                                    >
-                                                        <AddIcon/>
-                                                    </IconButton>
-                                                </>
-                                            )}
+                                                        <IconButton
+                                                            size="small"
+                                                            color="primary"
+                                                            onClick={() => handleIncrementComponent(slot.id)}
+                                                            sx={{bgcolor: 'action.hover'}}
+                                                        >
+                                                            <AddIcon/>
+                                                        </IconButton>
+                                                    </>
+                                                )}
 
-                                            <IconButton
-                                                color="error"
-                                                onClick={() => handleRemovePart(slot.id)}
-                                            >
-                                                <DeleteIcon/>
-                                            </IconButton>
-
-                                            {!slot.required && (
                                                 <IconButton
-                                                    color="warning"
-                                                    onClick={() => handleDeleteSlot(slot.id)}
+                                                    color="error"
+                                                    onClick={() => handleRemovePart(slot.id)}
                                                 >
-                                                    <CloseIcon/>
+                                                    <DeleteIcon/>
                                                 </IconButton>
-                                            )}
-                                        </Box>
-                                    )}
+                                            </>
+                                        )}
+
+                                        {!slot.required && (
+                                            <IconButton
+                                                color="warning"
+                                                onClick={() => handleDeleteSlot(slot.id)}
+                                            >
+                                                <CloseIcon/>
+                                            </IconButton>
+                                        )}
+                                    </Box>
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -630,7 +632,7 @@ export default function ForgePage() {
                     onClick={handleSubmit}
                     disabled={isSubmitting}
                 >
-                    {isSubmitting ? <CircularProgress size={24}/> : 'Submit Build For Review'}
+                    {isSubmitting ? <CircularProgress size={24}/> : 'Save Build'}
                 </Button>
             </Box>
 
