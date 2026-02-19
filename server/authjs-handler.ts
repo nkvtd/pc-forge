@@ -28,11 +28,13 @@ const authjsConfig = {
         const password = typeof credentials?.password === "string" ? credentials.password : null;
 
         if(!username || !password || typeof username !== 'string' || typeof password !== 'string') { return null; }
+        
+        const trimmedUsername = username.trim();
 
         const user = await db.query.usersTable.findFirst({
             where: or(
-                eq(usersTable.username, username),
-                eq(usersTable.email, username)
+                eq(usersTable.username, trimmedUsername),
+                eq(usersTable.email, trimmedUsername)
             ),
           });
 
