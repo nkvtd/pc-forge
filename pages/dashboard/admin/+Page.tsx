@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {
-    Container, Grid, Paper, Typography, Box, Avatar, Divider, Button,
+    Container, Paper, Typography, Box, Avatar, Divider, Button,
     CircularProgress, Table, TableBody, TableCell, TableHead, TableRow,
     Chip, IconButton, TextField, Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
@@ -172,8 +172,15 @@ export default function AdminDashboard() {
 
     return (
         <Container maxWidth="xl" sx={{mt: 4, mb: 10}}>
-            <Grid container spacing={4}>
-                <Grid item xs={12} md={3}>
+            <Box sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                    xs: '1fr',
+                    md: '300px 1fr'
+                },
+                gap: 4
+            }}>
+                <Box>
                     <Paper elevation={3} sx={{
                         p: 4,
                         display: 'flex',
@@ -215,192 +222,203 @@ export default function AdminDashboard() {
                             </Button>
                         </Box>
                     </Paper>
-                </Grid>
+                </Box>
 
-                <Grid item xs={12} md={9}>
-                    <Grid container spacing={4} direction="column">
-                        <Grid item xs={12}>
-                            <Paper sx={{p: 3, borderLeft: '6px solid #9c27b0'}}>
-                                <Box sx={{display: 'flex', alignItems: 'center', mb: 2}}>
-                                    <MemoryIcon color="secondary" sx={{mr: 1}}/>
-                                    <Typography variant="h6" fontWeight="bold">
-                                        Component Suggestions ({data.componentSuggestions?.length || 0})
-                                    </Typography>
-                                </Box>
+                <Box sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 4
+                }}>
+                    <Paper sx={{p: 3, borderLeft: '6px solid #9c27b0'}}>
+                        <Box sx={{display: 'flex', alignItems: 'center', mb: 2}}>
+                            <MemoryIcon color="secondary" sx={{mr: 1}}/>
+                            <Typography variant="h6" fontWeight="bold">
+                                Component Suggestions ({data.componentSuggestions?.length || 0})
+                            </Typography>
+                        </Box>
 
-                                {data.componentSuggestions?.length === 0 ? (
-                                    <Typography color="text.secondary">No suggestions.</Typography>
-                                ) : (
-                                    <Table size="small">
-                                        <TableHead>
-                                            <TableRow>
-                                                <TableCell>Link/Description</TableCell>
-                                                <TableCell>Type</TableCell>
-                                                <TableCell>User</TableCell>
-                                                <TableCell>Status</TableCell>
-                                                <TableCell align="right">Actions</TableCell>
-                                            </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {data.componentSuggestions?.map((sug: any) => (
-                                                <TableRow key={sug.id}>
-                                                    <TableCell sx={{maxWidth: 300}}>
-                                                        <a
-                                                            href={sug.link}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            title={sug.link}
-                                                            style={{textDecoration: 'none', color: 'inherit'}}
-                                                        >
-                                                            {sug.description || sug.link}
-                                                        </a>
-                                                    </TableCell>
-                                                    <TableCell>{sug.componentType?.toUpperCase()}</TableCell>
-                                                    <TableCell>{sug.userId}</TableCell>
-                                                    <TableCell>
-                                                        <Chip
-                                                            label={sug.status || 'pending'}
-                                                            size="small"
-                                                            color={
-                                                                sug.status === 'approved' ? 'success' :
-                                                                    sug.status === 'rejected' ? 'error' :
-                                                                        'default'
-                                                            }
-                                                        />
-                                                    </TableCell>
-                                                    <TableCell align="right">
-                                                        {sug.status === 'pending' ? (
-                                                            <>
-                                                                <IconButton
-                                                                    size="small"
-                                                                    color="success"
-                                                                    onClick={() => openSuggestionReview(sug.id, 'approved')}
-                                                                >
-                                                                    <CheckCircleIcon/>
-                                                                </IconButton>
-                                                                <IconButton
-                                                                    size="small"
-                                                                    color="error"
-                                                                    onClick={() => openSuggestionReview(sug.id, 'rejected')}
-                                                                >
-                                                                    <CancelIcon/>
-                                                                </IconButton>
-                                                            </>
-                                                        ) : sug.status === 'approved' ? (
-                                                            <Button
-                                                                size="small"
-                                                                variant="contained"
-                                                                color="warning"
-                                                                startIcon={<AddIcon/>}
-                                                                onClick={() => setCreateComponentDialog({
-                                                                    open: true,
-                                                                    suggestion: sug
-                                                                })}
-                                                            >
-                                                                Create
-                                                            </Button>
-                                                        ) : (
-                                                            <Typography variant="caption" color="text.secondary">
-                                                                {sug.adminComment || 'Rejected'}
-                                                            </Typography>
-                                                        )}
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                )}
-                            </Paper>
-                        </Grid>
-
-                        <Grid item xs={12}>
-                            <Paper sx={{p: 3, borderLeft: '6px solid #ed6c02', bgcolor: '#121212'}}>
-                                <Box sx={{display: 'flex', alignItems: 'center', mb: 2}}>
-                                    <BuildIcon color="warning" sx={{mr: 1}}/>
-                                    <Typography variant="h6" fontWeight="bold">
-                                        Builds Waiting for Approval ({data.pendingBuilds?.length || 0})
-                                    </Typography>
-                                </Box>
-
-                                {data.pendingBuilds?.length === 0 ? (
-                                    <Typography color="text.secondary">No pending builds.</Typography>
-                                ) : (
-                                    <Grid container spacing={2}>
-                                        {data.pendingBuilds.map((build: any) => (
-                                            <Grid item xs={12} sm={6} md={4} lg={3} key={build.id}>
-                                                <Box sx={{position: 'relative'}}>
-                                                    <BuildCard
-                                                        build={build}
-                                                        onClick={() => setSelectedBuildId(build.id)}
+                        {data.componentSuggestions?.length === 0 ? (
+                            <Typography color="text.secondary">No suggestions.</Typography>
+                        ) : (
+                            <Box sx={{width: '100%', overflowX: 'auto'}}>
+                                <Table size="small">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell>Link/Description</TableCell>
+                                            <TableCell>Type</TableCell>
+                                            <TableCell>User</TableCell>
+                                            <TableCell>Status</TableCell>
+                                            <TableCell align="right">Actions</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {data.componentSuggestions?.map((sug: any) => (
+                                            <TableRow key={sug.id}>
+                                                <TableCell sx={{minWidth: 200, maxWidth: 300}}>
+                                                    <a
+                                                        href={sug.link}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        title={sug.link}
+                                                        style={{textDecoration: 'none', color: 'inherit'}}
+                                                    >
+                                                        {sug.description || sug.link}
+                                                    </a>
+                                                </TableCell>
+                                                <TableCell sx={{minWidth: 80}}>
+                                                    {sug.componentType?.toUpperCase()}
+                                                </TableCell>
+                                                <TableCell sx={{minWidth: 100}}>
+                                                    {sug.user?.username || `${sug.userId}`}
+                                                </TableCell>
+                                                <TableCell sx={{minWidth: 100}}>
+                                                    <Chip
+                                                        label={sug.status || 'pending'}
+                                                        size="small"
+                                                        color={
+                                                            sug.status === 'approved' ? 'success' :
+                                                                sug.status === 'rejected' ? 'error' :
+                                                                    'default'
+                                                        }
                                                     />
-                                                    <Box sx={{
-                                                        mt: 1,
-                                                        display: 'flex',
-                                                        gap: 1,
-                                                        justifyContent: 'center'
-                                                    }}>
+                                                </TableCell>
+                                                <TableCell align="right" sx={{minWidth: 150}}>
+                                                    {sug.status === 'pending' ? (
+                                                        <>
+                                                            <IconButton
+                                                                size="small"
+                                                                color="success"
+                                                                onClick={() => openSuggestionReview(sug.id, 'approved')}
+                                                            >
+                                                                <CheckCircleIcon/>
+                                                            </IconButton>
+                                                            <IconButton
+                                                                size="small"
+                                                                color="error"
+                                                                onClick={() => openSuggestionReview(sug.id, 'rejected')}
+                                                            >
+                                                                <CancelIcon/>
+                                                            </IconButton>
+                                                        </>
+                                                    ) : sug.status === 'approved' ? (
                                                         <Button
+                                                            size="small"
                                                             variant="contained"
                                                             color="warning"
-                                                            size="small"
-                                                            startIcon={<BuildIcon/>}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                openBuildApproval(build.id, build.name);
-                                                            }}
+                                                            startIcon={<AddIcon/>}
+                                                            onClick={() => setCreateComponentDialog({
+                                                                open: true,
+                                                                suggestion: sug
+                                                            })}
                                                         >
-                                                            Review
+                                                            Create
                                                         </Button>
-                                                    </Box>
-                                                </Box>
-                                            </Grid>
+                                                    ) : (
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            {sug.adminComment || 'Rejected'}
+                                                        </Typography>
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
                                         ))}
-                                    </Grid>
-                                )}
-                            </Paper>
-                        </Grid>
+                                    </TableBody>
+                                </Table>
+                            </Box>
+                        )}
+                    </Paper>
 
-                        <Grid item xs={12}>
-                            <Paper sx={{p: 3, borderLeft: '6px solid #2e7d32'}}>
-                                <Typography variant="h6" fontWeight="bold" gutterBottom>
-                                    My Builds / Sandbox
-                                </Typography>
-                                {data.userBuilds?.length === 0 ? (
-                                    <Typography color="text.secondary">No builds created by admin.</Typography>
-                                ) : (
-                                    <Grid container spacing={2}>
-                                        {data.userBuilds.slice(0, 4).map((build: any) => (
-                                            <Grid item xs={12} sm={6} md={4} lg={3} key={build.id}>
-                                                <Box sx={{position: 'relative'}}>
-                                                    <BuildCard
-                                                        build={build}
-                                                        onClick={() => setSelectedBuildId(build.id)}
-                                                    />
-                                                    <Box sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
-                                                        <Button
-                                                            variant="outlined"
-                                                            color="error"
-                                                            size="small"
-                                                            startIcon={<DeleteIcon/>}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                openDeleteDialog(build.id, build.name);
-                                                            }}
-                                                            fullWidth
-                                                        >
-                                                            Delete
-                                                        </Button>
-                                                    </Box>
-                                                </Box>
-                                            </Grid>
-                                        ))}
-                                    </Grid>
-                                )}
-                            </Paper>
-                        </Grid>
-                    </Grid>
-                </Grid>
-            </Grid>
+                    <Paper sx={{p: 3, borderLeft: '6px solid #ed6c02', bgcolor: '#121212'}}>
+                        <Box sx={{display: 'flex', alignItems: 'center', mb: 2}}>
+                            <BuildIcon color="warning" sx={{mr: 1}}/>
+                            <Typography variant="h6" fontWeight="bold">
+                                Builds Waiting for Approval ({data.pendingBuilds?.length || 0})
+                            </Typography>
+                        </Box>
+
+                        {data.pendingBuilds?.length === 0 ? (
+                            <Typography color="text.secondary">No pending builds.</Typography>
+                        ) : (
+                            <Box sx={{
+                                display: 'grid',
+                                gridTemplateColumns: {
+                                    xs: '1fr',
+                                    sm: 'repeat(2, 1fr)',
+                                    lg: 'repeat(3, 1fr)',
+                                    xl: 'repeat(4, 1fr)'
+                                },
+                                gap: 2
+                            }}>
+                                {data.pendingBuilds.map((build: any) => (
+                                    <Box key={build.id}>
+                                        <BuildCard
+                                            build={build}
+                                            onClick={() => setSelectedBuildId(build.id)}
+                                        />
+                                        <Box sx={{mt: 1, display: 'flex', gap: 1, justifyContent: 'center'}}>
+                                            <Button
+                                                variant="contained"
+                                                color="warning"
+                                                size="small"
+                                                startIcon={<BuildIcon/>}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    openBuildApproval(build.id, build.name);
+                                                }}
+                                            >
+                                                Review
+                                            </Button>
+                                        </Box>
+                                    </Box>
+                                ))}
+                            </Box>
+                        )}
+                    </Paper>
+
+                    <Paper sx={{p: 3, borderLeft: '6px solid #2e7d32'}}>
+                        <Typography variant="h6" fontWeight="bold" gutterBottom>
+                            My Builds / Sandbox
+                        </Typography>
+                        {data.userBuilds?.length === 0 ? (
+                            <Typography color="text.secondary">No builds created by admin.</Typography>
+                        ) : (
+                            <Box sx={{
+                                display: 'grid',
+                                gridTemplateColumns: {
+                                    xs: '1fr',
+                                    sm: 'repeat(2, 1fr)',
+                                    lg: 'repeat(3, 1fr)',
+                                    xl: 'repeat(4, 1fr)'
+                                },
+                                gap: 2
+                            }}>
+                                {data.userBuilds.slice(0, 4).map((build: any) => (
+                                    <Box key={build.id}>
+                                        <BuildCard
+                                            build={build}
+                                            onClick={() => setSelectedBuildId(build.id)}
+                                        />
+                                        <Box sx={{mt: 1, display: 'flex', justifyContent: 'center'}}>
+                                            <Button
+                                                variant="outlined"
+                                                color="error"
+                                                size="small"
+                                                startIcon={<DeleteIcon/>}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    openDeleteDialog(build.id, build.name);
+                                                }}
+                                                fullWidth
+                                            >
+                                                Delete
+                                            </Button>
+                                        </Box>
+                                    </Box>
+                                ))}
+                            </Box>
+                        )}
+                    </Paper>
+                </Box>
+            </Box>
 
             <Dialog open={suggestionDialog.open}
                     onClose={() => setSuggestionDialog({...suggestionDialog, open: false})}>
@@ -519,10 +537,10 @@ export default function AdminDashboard() {
 
             <AddComponentDialog
                 open={createComponentDialog.open}
-                onClose={() => setCreateComponentDialog({ open: false, suggestion: null })}
+                onClose={() => setCreateComponentDialog({open: false, suggestion: null})}
                 onSuccess={() => {
                     loadData();
-                    setCreateComponentDialog({ open: false, suggestion: null });
+                    setCreateComponentDialog({open: false, suggestion: null});
                 }}
                 prefillData={createComponentDialog.suggestion ? {
                     type: createComponentDialog.suggestion.componentType,

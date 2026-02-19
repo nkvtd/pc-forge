@@ -63,7 +63,7 @@ const COMPONENT_CATEGORIES = [
     { id: 'network_card', label: 'Network Cards (Ethernet)', icon: <LanIcon fontSize="small" /> },
     { id: 'sound_card', label: 'Sound Cards', icon: <SpeakerIcon fontSize="small" /> },
     { id: 'optical_drive', label: 'Optical Drives', icon: <AlbumIcon fontSize="small" /> },
-    { id: 'memory_card', label: 'Memory Cards', icon: <SdCardIcon fontSize="small" /> },
+    { id: 'memory_card', label: 'Storage Cards', icon: <SdCardIcon fontSize="small" /> },
     { id: 'cables', label: 'Cables', icon: <CableIcon fontSize="small" /> },
 ];
 

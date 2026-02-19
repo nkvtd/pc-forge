@@ -9,7 +9,7 @@ import ListIcon from '@mui/icons-material/List';
 import BuildDetailsDialog from '../../components/BuildDetailsDialog';
 import BuildCard from '../../components/BuildCard';
 
-import {onGetApprovedBuilds, onGetAuthState, onCloneBuild} from '../+Layout.telefunc';
+import {onGetApprovedBuilds, onGetAuthState} from '../+Layout.telefunc';
 
 export default function HomePage() {
     const [data, setData] = useState<any>(null);
@@ -45,17 +45,8 @@ export default function HomePage() {
             }
         }
 
-        loadSite();
+        void loadSite();
     }, []);
-
-    const handleCloneWrapper = async (buildId: number) => {
-        if (!data?.isLoggedIn) return alert("Please login to clone builds!");
-        if (confirm(`Clone this build to your dashboard?`)) {
-            await onCloneBuild({buildId});
-            alert("Build cloned! Check your dashboard.");
-            setSelectedBuildId(null);
-        }
-    };
 
     if (!data) return <Box sx={{p: 10, textAlign: 'center'}}>Loading Forge...</Box>;
 
@@ -159,7 +150,6 @@ export default function HomePage() {
                 buildId={selectedBuildId}
                 currentUser={data.userId}
                 onClose={() => setSelectedBuildId(null)}
-                onClone={handleCloneWrapper}
             />
 
             <Dialog open={openRankedPopup} onClose={() => setOpenRankedPopup(false)} maxWidth="xl" fullWidth scroll="paper">
