@@ -40,7 +40,6 @@ export default function AdminDashboard() {
         buildId: number | null,
         buildName: string
     }>({open: false, buildId: null, buildName: ''});
-    const [rejectReason, setRejectReason] = useState('');
     const [approvalLoading, setApprovalLoading] = useState(false);
 
     const [suggestionDialog, setSuggestionDialog] = useState<{
@@ -75,7 +74,6 @@ export default function AdminDashboard() {
 
     const openBuildApproval = (buildId: number, buildName: string) => {
         setBuildApprovalDialog({open: true, buildId, buildName});
-        setRejectReason('');
     };
 
     const handleApproveBuild = async () => {
@@ -92,23 +90,23 @@ export default function AdminDashboard() {
         }
     };
 
-    const handleRejectBuild = async () => {
-        if (!buildApprovalDialog.buildId || !rejectReason.trim()) return;
-        setApprovalLoading(true);
-        try {
-            await onSetBuildApprovalStatus({
-                buildId: buildApprovalDialog.buildId,
-                isApproved: false,
-            });
-            setBuildApprovalDialog({open: false, buildId: null, buildName: ''});
-            loadData();
-        } catch (e) {
-            console.error("Reject error:", e); // 🔧 add this
-            alert("Reject failed");
-        } finally {
-            setApprovalLoading(false);
-        }
-    };
+    // const handleRejectBuild = async () => {
+    //     if (!buildApprovalDialog.buildId || !rejectReason.trim()) return;
+    //     setApprovalLoading(true);
+    //     try {
+    //         await onSetBuildApprovalStatus({
+    //             buildId: buildApprovalDialog.buildId,
+    //             isApproved: false,
+    //         });
+    //         setBuildApprovalDialog({open: false, buildId: null, buildName: ''});
+    //         loadData();
+    //     } catch (e) {
+    //         console.error("Reject error:", e); // 🔧 add this
+    //         alert("Reject failed");
+    //     } finally {
+    //         setApprovalLoading(false);
+    //     }
+    // };
 
     const openSuggestionReview = (id: number, action: 'approved' | 'rejected') => {
         setSuggestionDialog({open: true, id, action});
@@ -455,16 +453,16 @@ export default function AdminDashboard() {
                     <Typography color="text.secondary" sx={{mb: 2}}>
                         Build ID: {buildApprovalDialog.buildId}
                     </Typography>
-                    <TextField
-                        fullWidth
-                        multiline
-                        rows={2}
-                        label="Reject reason (optional)"
-                        value={rejectReason}
-                        onChange={(e) => setRejectReason(e.target.value)}
-                        placeholder="Why reject this build?"
-                        sx={{mt: 1}}
-                    />
+                    {/*<TextField*/}
+                    {/*    fullWidth*/}
+                    {/*    multiline*/}
+                    {/*    rows={2}*/}
+                    {/*    label="Reject reason (optional)"*/}
+                    {/*    value={rejectReason}*/}
+                    {/*    onChange={(e) => setRejectReason(e.target.value)}*/}
+                    {/*    placeholder="Why reject this build?"*/}
+                    {/*    sx={{mt: 1}}*/}
+                    {/*/>*/}
                 </DialogContent>
                 <DialogActions>
                     <Button
@@ -473,14 +471,14 @@ export default function AdminDashboard() {
                     >
                         Cancel
                     </Button>
-                    <Button
-                        onClick={handleRejectBuild}
-                        variant="outlined"
-                        color="error"
-                        disabled={approvalLoading || !rejectReason.trim()}
-                    >
-                        {approvalLoading ? <CircularProgress size={20}/> : 'Reject'}
-                    </Button>
+                    {/*<Button*/}
+                    {/*    onClick={handleRejectBuild}*/}
+                    {/*    variant="outlined"*/}
+                    {/*    color="error"*/}
+                    {/*    disabled={approvalLoading || !rejectReason.trim()}*/}
+                    {/*>*/}
+                    {/*    {approvalLoading ? <CircularProgress size={20}/> : 'Reject'}*/}
+                    {/*</Button>*/}
                     <Button
                         onClick={handleApproveBuild}
                         variant="contained"
