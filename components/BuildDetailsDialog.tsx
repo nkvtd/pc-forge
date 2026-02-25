@@ -125,16 +125,6 @@ export default function BuildDetailsDialog({open, buildId, onClose, currentUser,
         }
     };
 
-    const handleCloneClick = () => {
-        if(!currentUser){
-            window.location.href="/auth/login";
-            return;
-        }
-
-        setCloningBuildId(details.id);
-        setCloneDialogOpen(true);
-    }
-
     if (!open) return null;
 
     return (
@@ -272,8 +262,10 @@ export default function BuildDetailsDialog({open, buildId, onClose, currentUser,
                                                         color="primary"
                                                         size="large"
                                                         startIcon={<AutoFixHighIcon/>}
-                                                        onClick={handleCloneClick}
-                                                    >
+                                                        onClick={() => {
+                                                            setCloningBuildId(details.id);
+                                                            setCloneDialogOpen(true);
+                                                        }}                                                    >
                                                         Clone & Edit
                                                     </Button>
                                                 )}

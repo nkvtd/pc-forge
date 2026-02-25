@@ -1066,18 +1066,18 @@ export async function addComponentToBuild(db: Database, userId: number, buildId:
                 eq(buildComponentsTable.buildId, buildId)
             );
 
-        // const totalPrice = buildComponents.reduce((sum, c) =>
-        //     sum + (Number(c.price) * c.quantity), 0
-        // );
+        const totalPrice = buildComponents.reduce((sum, c) =>
+            sum + (Number(c.price) * c.quantity), 0
+        );
 
-        // await tx
-        //     .update(buildsTable)
-        //     .set({
-        //         totalPrice: totalPrice.toFixed(2)
-        //     })
-        //     .where(
-        //         eq(buildsTable.id, buildId)
-        //     );
+        await tx
+            .update(buildsTable)
+            .set({
+                totalPrice: totalPrice.toFixed(2)
+            })
+            .where(
+                eq(buildsTable.id, buildId)
+            );
 
         return buildId;
     })
@@ -1150,18 +1150,18 @@ export async function removeComponentFromBuild(db: Database, userId: number, bui
                 eq(buildComponentsTable.buildId, buildId)
             );
 
-        // const totalPrice = buildComponents.reduce((sum, c) =>
-        //     sum + (Number(c.price) * c.quantity), 0
-        // );
+        const totalPrice = buildComponents.reduce((sum, c) =>
+            sum + (Number(c.price) * c.quantity), 0
+        );
 
-        // await tx
-        //     .update(buildsTable)
-        //     .set({
-        //         totalPrice: totalPrice.toFixed(2)
-        //     })
-        //     .where(
-        //         eq(buildsTable.id, buildId)
-        //     );
+        await tx
+            .update(buildsTable)
+            .set({
+                totalPrice: totalPrice.toFixed(2)
+            })
+            .where(
+                eq(buildsTable.id, buildId)
+            );
 
         return componentId;
     })

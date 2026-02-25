@@ -351,27 +351,34 @@ export default function AdminDashboard() {
                                 gap: 2
                             }}>
                                 {data.pendingBuilds.map((build: any) => (
-                                    <Box key={build.id}>
+                                    <Box key={build.id} sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        borderRadius: 2,
+                                        overflow: 'hidden',
+                                        bgcolor: 'background.paper'
+                                    }}>
                                         <BuildCard
                                             build={build}
                                             onClick={() => setSelectedBuildId(build.id)}
                                         />
-                                        <Box sx={{mt: 1, display: 'flex', gap: 1, justifyContent: 'center'}}>
-                                            <Button
-                                                variant="contained"
-                                                color="warning"
-                                                size="small"
-                                                startIcon={<BuildIcon/>}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    openBuildApproval(build.id, build.name);
-                                                }}
-                                            >
-                                                Review
-                                            </Button>
-                                        </Box>
+                                        <Button
+                                            variant="contained"
+                                            color="warning"
+                                            size="small"
+                                            fullWidth
+                                            startIcon={<BuildIcon/>}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                openBuildApproval(build.id, build.name);
+                                            }}
+                                            sx={{borderRadius: 0}}
+                                        >
+                                            Review
+                                        </Button>
                                     </Box>
                                 ))}
+
                             </Box>
                         )}
                     </Paper>

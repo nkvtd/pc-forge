@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useMemo} from 'react';
 import {
     Container, Paper, Typography, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Button, IconButton, Avatar, TextField, Grid, Chip, CircularProgress,
+    Button, IconButton, Avatar, TextField, Chip, CircularProgress,
     Menu, MenuItem, ListItemIcon, Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 
@@ -73,7 +73,8 @@ export default function ForgePage() {
     useEffect(() => {
         if (buildId && buildName.trim()) {
             const timeoutId = setTimeout(() => {
-                saveBuildState({buildId, name: buildName.trim(), description});
+                saveBuildState({buildId, name: buildName.trim(), description}).catch(() => {
+                });
             }, 1000);
 
             return () => clearTimeout(timeoutId);
@@ -325,7 +326,8 @@ export default function ForgePage() {
     const handleDeleteSlot = (slotId: string) => {
         const slot = slots.find(s => s.id === slotId);
         if (slot?.component) {
-            handleRemovePart(slotId);
+            handleRemovePart(slotId).catch(() => {
+            });
         }
         setSlots(prev => prev.filter(s => s.id !== slotId));
     };
@@ -387,6 +389,7 @@ export default function ForgePage() {
                 message: 'Failed to save build. Please try again.',
                 severity: 'error'
             });
+            return;
         } finally {
             setIsSubmitting(false);
         }
@@ -401,17 +404,15 @@ export default function ForgePage() {
         <Container maxWidth="xl" sx={{mt: 0, mb: 10}}>
             <Paper sx={{p: 4, mb: 0, bgcolor: '#ff8201', border: '1px solid #1e1e1e', color: 'white'}}>
                 <Typography variant="h4" align="center" fontWeight="bold">Forge Your Machine</Typography>
-                <Grid container spacing={2} justifyContent="center" sx={{mt: 2}}>
-                    <Grid item xs={12} md={6}>
-                        <TextField
-                            fullWidth
-                            label="Build Name *"
-                            value={buildName}
-                            onChange={e => setBuildName(e.target.value)}
-                            sx={{bgcolor: '#1e1e1e', borderRadius: 1, color: 'white'}}
-                        />
-                    </Grid>
-                </Grid>
+                <Box sx={{display: 'flex', justifyContent: 'center', mt: 2}}>
+                    <TextField
+                        label="Build Name *"
+                        value={buildName}
+                        onChange={e => setBuildName(e.target.value)}
+                        sx={{bgcolor: '#1e1e1e', textAlign: 'center', borderRadius: 1, color: 'white', width: '200px'}}
+                    />
+                </Box>
+
             </Paper>
 
             <TableContainer component={Paper} elevation={3}>
@@ -579,7 +580,7 @@ export default function ForgePage() {
                         paper: {
                             sx: {
                                 position: 'absolute',
-                                top: '30%',
+                                top: '46%',
                                 // left: '50%',
                                 // transform: 'translate(50%, +50%)',
                             }
