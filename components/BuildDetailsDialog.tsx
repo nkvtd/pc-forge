@@ -77,7 +77,6 @@ export default function BuildDetailsDialog({open, buildId, onClose, currentUser,
         }
     }, [open, buildId]);
 
-
     const handleFavorite = async () => {
         if (!currentUser || buildId === null) return alert("Please login to favorite builds.");
         const res = await onToggleFavorite({buildId});
@@ -124,6 +123,8 @@ export default function BuildDetailsDialog({open, buildId, onClose, currentUser,
             })
         }
     };
+
+    const isCreator = currentUser && details && details.userId === currentUser;
 
     if (!open) return null;
 
@@ -304,7 +305,7 @@ export default function BuildDetailsDialog({open, buildId, onClose, currentUser,
                                             </Box>
                                         </Box>
 
-                                        {currentUser && details.userId !== currentUser.id && (
+                                        {currentUser && !isCreator && (
                                             <Box sx={{mb: 4, p: 2, border: '1px solid #ddd', borderRadius: 2}}>
                                                 <Typography variant="subtitle2" gutterBottom>Your Review</Typography>
                                                 <Box sx={{display: 'flex', alignItems: 'center', mb: 1}}>
@@ -326,8 +327,8 @@ export default function BuildDetailsDialog({open, buildId, onClose, currentUser,
                                             </Box>
                                         )}
 
-                                        {currentUser && details.userId === currentUser.id && (
-                                            <Alert severity="info" sx={{mb: 4}}>
+                                        {currentUser && isCreator && (
+                                            <Alert severity="error" sx={{mb: 4}}>
                                                 You cannot rate your own builds.
                                             </Alert>
                                         )}
