@@ -204,7 +204,7 @@ export default function UserDashboard() {
                                 gap: 2
                             }}>
                                 {data.userBuilds.slice(0, 6).map((build: any) => (
-                                    <Box key={build.id} sx={{ display: 'flex', flexDirection: 'column' }}>
+                                    <Box key={build.id} sx={{ display: 'flex', flexDirection: 'column', pb: 2 }}>
                                         <Box sx={{ flexGrow: 1 }}>
                                             <BuildCard
                                                 build={build}
@@ -250,10 +250,10 @@ export default function UserDashboard() {
                             xl: 'repeat(5, 1fr)'
                         },
                         gap: 2,
-                        mt: 1
+                        mt: 1,
                     }}>
                         {data.userBuilds.map((build: any) => (
-                            <Box key={build.id}>
+                            <Box key={build.id} sx={{ pb: 4 }}>
                                 <BuildCard
                                     build={build}
                                     onClick={() => {
