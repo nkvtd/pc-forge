@@ -248,23 +248,25 @@ export default function ComponentDialog({open, category, onClose, mode, onSelect
                 <Typography variant="caption">${priceRange[1]}+</Typography>
             </Box>
 
-            <Button
-                fullWidth
-                variant="contained"
-                startIcon={<AddCircleIcon/>}
-                onClick={() => setSuggestOpen(true)}
-                sx={{
-                    mt: 2,
-                    bgcolor: '#ff8201',
-                    fontWeight: 'bold',
-                    fontSize: '0.875rem',
-                    '&:hover': {bgcolor: '#e67300'}
-                }}
-            >
-                Suggest Component
-            </Button>
+            {userId && (
+                <Button
+                    fullWidth
+                    variant="contained"
+                    startIcon={<AddCircleIcon/>}
+                    onClick={() => setSuggestOpen(true)}
+                    sx={{
+                        mt: 2,
+                        bgcolor: '#ff8201',
+                        fontWeight: 'bold',
+                        fontSize: '0.875rem',
+                        '&:hover': {bgcolor: '#e67300'}
+                    }}
+                >
+                    Suggest Component
+                </Button>
+            )}
         </Box>
-    ), [tempSearchQuery, sortOrder, selectedBrands, availableBrands, priceRange]);
+    ), [tempSearchQuery, sortOrder, selectedBrands, availableBrands, priceRange, userId]);
 
     if (!open) return null;
 

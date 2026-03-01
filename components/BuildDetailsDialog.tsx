@@ -243,43 +243,46 @@ export default function BuildDetailsDialog({open, buildId, onClose, currentUser,
                                                 </Typography>
                                             </Box>
 
-                                            <Box sx={{display: 'flex', flexDirection: 'column', gap: 1}}>
-                                                {isDashboardView && isOwner ? (
+                                            {currentUser && (
+                                                <Box sx={{display: 'flex', flexDirection: 'column', gap: 1}}>
+                                                    {isDashboardView && isOwner ? (
+                                                        <Button
+                                                            variant="contained"
+                                                            color="primary"
+                                                            size="large"
+                                                            startIcon={<AutoFixHighIcon/>}
+                                                            onClick={() => {
+                                                                window.location.href = `/forge?buildId=${details.id}`;
+                                                                onClose();
+                                                            }}
+                                                        >
+                                                            Edit Build
+                                                        </Button>
+                                                    ) : (
+                                                        <Button
+                                                            variant="contained"
+                                                            color="primary"
+                                                            size="large"
+                                                            startIcon={<AutoFixHighIcon/>}
+                                                            onClick={() => {
+                                                                setCloningBuildId(details.id);
+                                                                setCloneDialogOpen(true);
+                                                            }}
+                                                        >
+                                                            Clone & Edit
+                                                        </Button>
+                                                    )}
                                                     <Button
-                                                        variant="contained"
-                                                        color="primary"
-                                                        size="large"
-                                                        startIcon={<AutoFixHighIcon/>}
-                                                        onClick={() => {
-                                                            window.location.href = `/forge?buildId=${details.id}`;
-                                                            onClose();
-                                                        }}
+                                                        variant={details.isFavorite ? "contained" : "outlined"}
+                                                        color={details.isFavorite ? "error" : "primary"}
+                                                        startIcon={details.isFavorite ? <FavoriteIcon/> : <FavoriteBorderIcon/>}
+                                                        onClick={handleFavorite}
                                                     >
-                                                        Edit Build
+                                                        {details.isFavorite ? "Favorited" : "Add to Favorites"}
                                                     </Button>
-                                                ) : (
-                                                    <Button
-                                                        variant="contained"
-                                                        color="primary"
-                                                        size="large"
-                                                        startIcon={<AutoFixHighIcon/>}
-                                                        onClick={() => {
-                                                            setCloningBuildId(details.id);
-                                                            setCloneDialogOpen(true);
-                                                        }}                                                    >
-                                                        Clone & Edit
-                                                    </Button>
-                                                )}
-                                                <Button
-                                                    variant={details.isFavorite ? "contained" : "outlined"}
-                                                    color={details.isFavorite ? "error" : "primary"}
-                                                    startIcon={details.isFavorite ? <FavoriteIcon/> :
-                                                        <FavoriteBorderIcon/>}
-                                                    onClick={handleFavorite}
-                                                >
-                                                    {details.isFavorite ? "Favorited" : "Add to Favorites"}
-                                                </Button>
-                                            </Box>
+                                                </Box>
+                                            )}
+
                                         </Box>
                                     </Box>
                                 )}
