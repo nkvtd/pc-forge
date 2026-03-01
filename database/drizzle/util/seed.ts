@@ -1,6 +1,8 @@
 import pg from 'pg';
 
 const dataSQL = `
+SET search_path TO public;
+
 TRUNCATE TABLE
 suggestions,
 cooler_cpu_sockets,
@@ -745,15 +747,14 @@ INSERT INTO build (user_id, name, created_at, description, total_price, is_appro
 ((SELECT id FROM users WHERE username='tome'), 'Gaming Build', '2025-09-18', 'Mid-range gaming PC', 1154.92, TRUE);
 
 INSERT INTO build_component (build_id, component_id) VALUES
-((SELECT id FROM build WHERE name='Gaming Build'), (SELECT id FROM components WHERE name='Ryzen 7 5800X')),
-((SELECT id FROM build WHERE name='Gaming Build'), (SELECT id FROM components WHERE name='RTX 3060')),
-((SELECT id FROM build WHERE name='Gaming Build'), (SELECT id FROM components WHERE name='B550 Motherboard')),
-((SELECT id FROM build WHERE name='Gaming Build'), (SELECT id FROM components WHERE name='16GB DDR4 Kit')),
-((SELECT id FROM build WHERE name='Gaming Build'), (SELECT id FROM components WHERE name='1TB NVMe SSD')),
-((SELECT id FROM build WHERE name='Gaming Build'), (SELECT id FROM components WHERE name='650W PSU')),
-((SELECT id FROM build WHERE name='Gaming Build'), (SELECT id FROM components WHERE name='4000D Airflow')),
-((SELECT id FROM build WHERE name='Gaming Build'), (SELECT id FROM components WHERE name='Air Cooler'));
-
+  ((SELECT id FROM build WHERE name = 'Gaming Build'),(SELECT id FROM components WHERE name = 'Ryzen 7 5800X')),
+  ((SELECT id FROM build WHERE name = 'Gaming Build'),(SELECT id FROM components WHERE name = 'RTX 3060')),
+  ((SELECT id FROM build WHERE name = 'Gaming Build'),(SELECT id FROM components WHERE name = 'B550M TUF Gaming')),
+  ((SELECT id FROM build WHERE name = 'Gaming Build'),(SELECT id FROM components WHERE name = 'Fury Beast 16GB')),
+  ((SELECT id FROM build WHERE name = 'Gaming Build'),(SELECT id FROM components WHERE name = 'Samsung 980 Pro 1TB')),
+  ((SELECT id FROM build WHERE name = 'Gaming Build'),(SELECT id FROM components WHERE name = 'CX650M')),
+  ((SELECT id FROM build WHERE name = 'Gaming Build'),(SELECT id FROM components WHERE name = '4000D Airflow')),
+  ((SELECT id FROM build WHERE name = 'Gaming Build'), (SELECT id FROM components WHERE name = 'NH-U12S'));
 
 INSERT INTO build (user_id, name, created_at, description, total_price, is_approved) VALUES
 ((SELECT id FROM users WHERE username='budget_king'), 'Console Killer 2025', '2024-12-01', 'Cheap entry level gaming PC', 580.00, TRUE);
@@ -933,11 +934,24 @@ INSERT INTO review (build_id, user_id, content, created_at) VALUES
 ((SELECT id FROM build WHERE name='Radeon Ultimate'), (SELECT id FROM users WHERE username='pc_wizard'), 'Red team absolutely crushes 4K gaming. No regrets.', '2025-03-11'),
 ((SELECT id FROM build WHERE name='Radeon Ultimate'), (SELECT id FROM users WHERE username='linux_fan'), 'AMD drivers work flawlessly on Linux. Peak gaming experience.', '2025-03-12');
 
+INSERT INTO case_storage_form_factors (case_id, form_factor, num_slots) VALUES
+((SELECT id FROM components WHERE name = 'H5 Flow'), '3.5', 2),
+((SELECT id FROM components WHERE name = '4000D Airflow'), '3.5', 2),
+((SELECT id FROM components WHERE name = '5000D Airflow'), '3.5', 2),
+((SELECT id FROM components WHERE name = 'O11 Dynamic Evo'), '3.5', 2),
+((SELECT id FROM components WHERE name = 'Define 7'), '3.5', 4),
+((SELECT id FROM components WHERE name = 'Meshify 2 Compact'), '3.5', 2),
+((SELECT id FROM components WHERE name = 'Lancool 216'), '3.5', 2);
+
+INSERT INTO case_storage_form_factors (case_id, form_factor, num_slots) VALUES
+((SELECT id FROM components WHERE name = 'H5 Flow'), '2.5', 4),
+((SELECT id FROM components WHERE name = '4000D Airflow'), '2.5', 2),
+((SELECT id FROM components WHERE name = 'Versa H18'), '2.5', 2);
+
 INSERT INTO suggestions (user_id, admin_id, link, admin_comment, description, status, component_type) VALUES
 (1, 4, 'https://www.gigabyte.com/Graphics-Card/GV-N4070WF3OC-12GD-rev-10', NULL, 'Consider adding the NVIDIA RTX 4070', 'pending', 'gpu'),
 (5, 4, 'https://www.amd.com/en/support/downloads/drivers.html/processors/ryzen/ryzen-7000-series/amd-ryzen-5-7600x.html#amd_support_product_spec', NULL, 'Consider adding the Ryzen 5 7600x', 'pending', 'cpu'),
-(11, NULL, 'https://www.corsair.com/us/en/p/pc-cases/cc-9011251-ww/3000d-tempered-glass-mid-tower-black-cc-9011251-ww', NULL, 'Please add the Corsair 3000D Airflow case', 'pending', 'case');
-`
+(11, NULL, 'https://www.corsair.com/us/en/p/pc-cases/cc-9011251-ww/3000d-tempered-glass-mid-tower-black-cc-9011251-ww', NULL, 'Please add the Corsair 3000D Airflow case', 'pending', 'case');`
 
 const triggerSQL = `
 CREATE OR REPLACE FUNCTION update_build_total_price()
