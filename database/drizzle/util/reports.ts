@@ -10,15 +10,15 @@ async function main() {
         console.log('--- Top Performing Components ---');
         console.table(r1.rows);
 
-        const r2 = await db.execute(sql`SELECT * FROM get_report_user_leaderboard()`);
+        const r2 = await db.execute(sql`SELECT * FROM get_report_user_reputation_leaderboard()`);
         console.log('--- User Reputation Leaderboard ---');
         console.table(r2.rows);
 
-        const r3 = await db.execute(sql`SELECT * FROM get_report_price_performance()`);
+        const r3 = await db.execute(sql`SELECT * FROM get_report_price_to_performance()`);
         console.log('--- Price-to-Performance Analysis ---');
         console.table(r3.rows);
 
-        const r4 = await db.execute(sql`SELECT * FROM get_report_budget_tier()`);
+        const r4 = await db.execute(sql`SELECT * FROM get_report_budget_tier_popularity()`);
         console.log('--- Budget Tier Popularity ---');
         console.table(r4.rows);
 
